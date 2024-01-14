@@ -1,42 +1,53 @@
 import { World, Vector, MassPoint, Spring, DampedSpring } from '../src/index.js';
 
 
+class MainWorld extends World {
+  constructor() {
+    super();
+
+    this.gravitationalAcceleration = new Vector(0, this.GRAVITY, 0);
+
+    this.points = [];
+    this.springs = [];
+
+    this.points[0] = new MassPoint(1, new Vector(3, 3, 0));
+    this.points[1] = new MassPoint(1, new Vector(4, 4, 0));
+    this.points[2] = new MassPoint(1, new Vector(1, 5, 0));
+
+    this.springs[0] = new DampedSpring(0.0002, 0.001, 1, this.points[0], this.points[1]);
+    this.springs[1] = new DampedSpring(0.0002, 0.001, 1, this.points[1], this.points[2]);
+    this.springs[2] = new DampedSpring(0.0002, 0.001, 1, this.points[0], this.points[2]);
+
+    this.registerObject(...this.points, ...this.springs);
+  }
+
+  simulate() {
+    super.simulate();
+
+    // add gravity
+    for (const point of this.points) {
+      point.applyForce(this.gravitationalAcceleration.multiply(point.mass));
+    }
+  }
+}
+
+
 const sketch = p => {
-  const world = new World();
-  let point1, point2, point3, spring1, spring2, spring3;
+  const world = new MainWorld();
 
   p.setup = () => {
     p.createCanvas(600, 600);
-
-    point1 = new MassPoint(3000, new Vector(300, 300, 0));
-    point2 = new MassPoint(3000, new Vector(400, 400, 0));
-    point3 = new MassPoint(3000, new Vector(100, 500, 0));
-
-    spring1 = new DampedSpring(10, 10, 50, point1, point2);
-    spring2 = new DampedSpring(10, 10, 50, point2, point3);
-    spring3 = new DampedSpring(10, 10, 50, point1, point3);
-
-    world.registerObject(point1);
-    world.registerObject(point2);
-    world.registerObject(point3);
-    world.registerObject(spring1);
-    world.registerObject(spring2);
-    world.registerObject(spring3);
   };
 
   p.draw = () => {
     p.background(51);
 
     p.noStroke();
-
     p.fill(255, 0, 0);
-    p.ellipse(point1.position.get(0), point1.position.get(1), 30);
 
-    p.fill(0, 255, 0);
-    p.ellipse(point2.position.get(0), point2.position.get(1), 30);
-
-    p.fill(0, 0, 255);
-    p.ellipse(point3.position.get(0), point3.position.get(1), 30);
+    for (const point of world.points) {
+      p.ellipse(point.position.get(0) * 100, point.position.get(1) * 100, 30);
+    }
 
     world.simulate();
   };
