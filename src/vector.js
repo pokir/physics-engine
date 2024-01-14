@@ -1,4 +1,4 @@
-class Vector {
+export class Vector {
   constructor(...values) {
     for (const value of values) {
       if (isNaN(value))
@@ -16,12 +16,21 @@ class Vector {
     return this.values[index];
   }
 
-  getNorm() {
-    return Math.sqrt(this.values.reduce((total, value) => total + Math.pow(value, 2)));
-  }
-
   getDimension() {
     return this.values.length;
+  }
+
+  getNorm() {
+    return Math.sqrt(this.dot(this));
+  }
+
+  dot(vector) {
+    if (vector.getDimension() !== this.getDimension())
+      throw new Error('vector dimensions do not match');
+
+    return this.values.reduce((total, value, index) => (
+        total + value * vector.values[index]
+      ), 0);
   }
 
   add(vector) {
@@ -37,7 +46,7 @@ class Vector {
     return result;
   }
 
-  sub(vector) {
+  subtract(vector) {
     if (vector.getDimension() !== this.getDimension())
       throw new Error('vector dimensions do not match');
 
