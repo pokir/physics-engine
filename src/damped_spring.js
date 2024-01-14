@@ -1,6 +1,5 @@
 import { Spring } from './spring.js';
 
-
 export class DampedSpring extends Spring {
   constructor(stiffness, damping, restLength, point1, point2) {
     super(stiffness, restLength, point1, point2);

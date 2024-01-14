@@ -1,7 +1,10 @@
-import { World, Vector, MassPoint, Spring, DampedSpring } from '../src/index.js';
-
+import {
+  World, Vector, MassPoint, Spring, DampedSpring,
+} from '../src/index.js';
 
 class MainWorld extends World {
+  GRAVITY = 9.81;
+
   constructor() {
     super();
 
@@ -31,8 +34,7 @@ class MainWorld extends World {
   }
 }
 
-
-const sketch = p => {
+const sketch = (p) => {
   const world = new MainWorld();
 
   p.setup = () => {

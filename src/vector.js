@@ -1,8 +1,7 @@
 export class Vector {
   constructor(...values) {
     for (const value of values) {
-      if (isNaN(value))
-        throw new Error('not a number');
+      if (isNaN(value)) throw new Error('not a number');
     }
 
     this.values = values;
@@ -25,17 +24,15 @@ export class Vector {
   }
 
   dot(vector) {
-    if (vector.getDimension() !== this.getDimension())
-      throw new Error('vector dimensions do not match');
+    if (vector.getDimension() !== this.getDimension()) throw new Error('vector dimensions do not match');
 
     return this.values.reduce((total, value, index) => (
-        total + value * vector.values[index]
-      ), 0);
+      total + value * vector.values[index]
+    ), 0);
   }
 
   add(vector) {
-    if (vector.getDimension() !== this.getDimension())
-      throw new Error('vector dimensions do not match');
+    if (vector.getDimension() !== this.getDimension()) throw new Error('vector dimensions do not match');
 
     const result = this.clone();
 
@@ -47,8 +44,7 @@ export class Vector {
   }
 
   subtract(vector) {
-    if (vector.getDimension() !== this.getDimension())
-      throw new Error('vector dimensions do not match');
+    if (vector.getDimension() !== this.getDimension()) throw new Error('vector dimensions do not match');
 
     const result = this.clone();
 
@@ -60,31 +56,27 @@ export class Vector {
   }
 
   multiply(factor) {
-    if (isNaN(factor))
-      throw new Error('not a number');
+    if (isNaN(factor)) throw new Error('not a number');
 
     const result = this.clone();
-    result.values = result.values.map(value => value * factor);
+    result.values = result.values.map((value) => value * factor);
     return result;
   }
 
   divide(divisor) {
-    if (divisor === 0)
-      throw new Error('division by zero');
+    if (divisor === 0) throw new Error('division by zero');
 
-    if (isNaN(divisor))
-      throw new Error('not a number');
+    if (isNaN(divisor)) throw new Error('not a number');
 
     const result = this.clone();
-    result.values = result.values.map(value => value / divisor);
+    result.values = result.values.map((value) => value / divisor);
     return result;
   }
 
   normalize() {
     const norm = this.getNorm();
 
-    if (this.getNorm() === 0)
-      throw new Error('cannot normalize zero vector');
+    if (this.getNorm() === 0) throw new Error('cannot normalize zero vector');
 
     return this.divide(norm);
   }

@@ -1,10 +1,8 @@
 export class Spring {
   constructor(stiffness, restLength, point1, point2) {
-    if (isNaN(stiffness))
-      throw new Error('not a number');
+    if (isNaN(stiffness)) throw new Error('not a number');
 
-    if (isNaN(restLength))
-      throw new Error('not a number');
+    if (isNaN(restLength)) throw new Error('not a number');
 
     this.stiffness = stiffness;
     this.restLength = restLength;

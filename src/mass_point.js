@@ -1,6 +1,5 @@
 import { Vector } from './vector.js';
 
-
 export class MassPoint {
   constructor(mass, position) {
     this.mass = mass;
