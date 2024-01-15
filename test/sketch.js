@@ -1,5 +1,5 @@
 import {
-  World, Vector, MassPoint, Spring, DampedSpring,
+  World, Vector, MassPoint, DampedSpring,
 } from '../src/index.js';
 
 class MainWorld extends World {
@@ -28,9 +28,9 @@ class MainWorld extends World {
     super.simulate();
 
     // add gravity
-    for (const point of this.points) {
+    this.points.forEach((point) => {
       point.applyForce(this.gravitationalAcceleration.multiply(point.mass));
-    }
+    });
   }
 }
 
@@ -47,9 +47,9 @@ const sketch = (p) => {
     p.noStroke();
     p.fill(255, 0, 0);
 
-    for (const point of world.points) {
+    world.points.forEach((point) => {
       p.ellipse(point.position.get(0) * 100, point.position.get(1) * 100, 30);
-    }
+    });
 
     world.simulate();
   };

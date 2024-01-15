@@ -1,4 +1,4 @@
-import { Vector } from './vector.js';
+import { Vector } from '../../math/index.js';
 
 export class MassPoint {
   constructor(mass, position) {
