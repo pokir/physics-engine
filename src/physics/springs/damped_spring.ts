@@ -1,12 +1,15 @@
+import { MassPoint } from '../points/mass_point.js';
 import { Spring } from './spring.js';
 
 export class DampedSpring extends Spring {
-  constructor(stiffness, damping, restLength, point1, point2) {
+  damping: number;
+
+  constructor(stiffness: number, damping: number, restLength: number, point1: MassPoint, point2: MassPoint) {
     super(stiffness, restLength, point1, point2);
     this.damping = damping;
   }
 
-  update(dt) {
+  update(dt: number) {
     super.update(dt);
 
     // calculate the damping force

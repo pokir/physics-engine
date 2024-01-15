@@ -1,8 +1,10 @@
 export class Vector {
-  constructor(...values) {
-    for (const value of values) {
-      if (isNaN(value)) throw new Error('not a number');
-    }
+  values: number[];
+
+  constructor(...values: number[]) {
+    values.forEach((value) => {
+      if (Number.isNaN(value)) throw new Error('not a number');
+    });
 
     this.values = values;
   }
@@ -11,7 +13,7 @@ export class Vector {
     return new Vector(...this.values);
   }
 
-  get(index) {
+  get(index: number) {
     return this.values[index];
   }
 
@@ -23,7 +25,7 @@ export class Vector {
     return Math.sqrt(this.dot(this));
   }
 
-  dot(vector) {
+  dot(vector: Vector) {
     if (vector.getDimension() !== this.getDimension()) throw new Error('vector dimensions do not match');
 
     return this.values.reduce((total, value, index) => (
@@ -31,42 +33,42 @@ export class Vector {
     ), 0);
   }
 
-  add(vector) {
+  add(vector: Vector) {
     if (vector.getDimension() !== this.getDimension()) throw new Error('vector dimensions do not match');
 
     const result = this.clone();
 
-    for (let i = 0; i < vector.values.length; ++i) {
+    for (let i = 0; i < vector.values.length; i += 1) {
       result.values[i] += vector.values[i];
     }
 
     return result;
   }
 
-  subtract(vector) {
+  subtract(vector: Vector) {
     if (vector.getDimension() !== this.getDimension()) throw new Error('vector dimensions do not match');
 
     const result = this.clone();
 
-    for (let i = 0; i < vector.values.length; ++i) {
+    for (let i = 0; i < vector.values.length; i += 1) {
       result.values[i] -= vector.values[i];
     }
 
     return result;
   }
 
-  multiply(factor) {
-    if (isNaN(factor)) throw new Error('not a number');
+  multiply(factor: number) {
+    if (Number.isNaN(factor)) throw new Error('not a number');
 
     const result = this.clone();
     result.values = result.values.map((value) => value * factor);
     return result;
   }
 
-  divide(divisor) {
+  divide(divisor: number) {
     if (divisor === 0) throw new Error('division by zero');
 
-    if (isNaN(divisor)) throw new Error('not a number');
+    if (Number.isNaN(divisor)) throw new Error('not a number');
 
     const result = this.clone();
     result.values = result.values.map((value) => value / divisor);

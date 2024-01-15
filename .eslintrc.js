@@ -3,7 +3,23 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: 'airbnb-base',
+  plugins: [
+    '@typescript-eslint',
+    'import',
+  ],
+  extends: [
+    'airbnb-base',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+  ],
+  parser: '@typescript-eslint/parser',
+  settings: {
+    'import/resolver': {
+      typescript: true,
+      node: true,
+    },
+  },
   overrides: [
     {
       env: {
@@ -25,4 +41,5 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'import/extensions': 'off',
   },
+  root: true,
 };

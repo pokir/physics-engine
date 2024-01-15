@@ -1,6 +1,6 @@
 import {
   World, Vector, MassPoint, DampedSpring,
-} from '../src/index.js';
+} from '../dist/index.js';
 
 class MainWorld extends World {
   GRAVITY = 9.81;

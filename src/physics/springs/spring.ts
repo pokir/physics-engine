@@ -1,8 +1,18 @@
-export class Spring {
-  constructor(stiffness, restLength, point1, point2) {
-    if (isNaN(stiffness)) throw new Error('not a number');
+import { MassPoint } from '../points/mass_point';
 
-    if (isNaN(restLength)) throw new Error('not a number');
+export class Spring {
+  stiffness: number;
+
+  restLength: number;
+
+  point1: MassPoint;
+
+  point2: MassPoint;
+
+  constructor(stiffness: number, restLength: number, point1: MassPoint, point2: MassPoint) {
+    if (Number.isNaN(stiffness)) throw new Error('not a number');
+
+    if (Number.isNaN(restLength)) throw new Error('not a number');
 
     this.stiffness = stiffness;
     this.restLength = restLength;
@@ -10,7 +20,7 @@ export class Spring {
     this.point2 = point2;
   }
 
-  update(dt) {
+  update(dt: number) {
     const displacement = this.point2.position.subtract(this.point1.position);
     const lengthDifference = displacement.getNorm() - this.restLength;
 

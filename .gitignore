@@ -1,5 +1,8 @@
+# MacOS
 .DS_Store
 
+# npm
 /node_modules
 
-physics_engine.js
+# typescript output
+/dist
