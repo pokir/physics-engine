@@ -1,4 +1,5 @@
 import { Vector } from '../../math/vector.js';
+import { Transform } from '../transform.js';
 import { Point } from './point.js';
 
 export class MassPoint extends Point {
@@ -6,11 +7,10 @@ export class MassPoint extends Point {
 
   totalForce: Vector;
 
-  constructor(mass: number, position: Vector) {
-    super(position);
+  constructor(mass: number, transform: Transform) {
+    super(transform);
     this.mass = mass;
     this.totalForce = new Vector(0, 0, 0);
-    this.velocity = new Vector(0, 0, 0);
   }
 
   update(dt: number) {

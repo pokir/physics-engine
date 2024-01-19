@@ -1,31 +1,25 @@
-export interface updateFunction {
-  (dt: number): void
-}
-
-export interface WorldObject {
-  update: updateFunction
-}
+import { Updatable } from './updateable';
 
 export class World {
-  objects: WorldObject[];
+  updatables: Updatable[];
 
   lastUpdateTime: number;
 
   constructor() {
-    this.objects = [];
+    this.updatables = [];
     this.lastUpdateTime = Date.now();
   }
 
-  registerObject(...objects: []) {
-    this.objects.push(...objects);
+  register(...updatables: Updatable[]) {
+    this.updatables.push(...updatables);
   }
 
   simulate() {
     const currentTime = Date.now();
 
-    this.objects.forEach((object) => {
+    this.updatables.forEach((updatable) => {
       const dt = (currentTime - this.lastUpdateTime) / 1000;
-      object.update(dt);
+      updatable.update(dt);
     });
 
     this.lastUpdateTime = currentTime;

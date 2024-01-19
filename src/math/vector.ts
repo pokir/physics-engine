@@ -2,9 +2,9 @@ export class Vector {
   values: number[];
 
   constructor(...values: number[]) {
-    values.forEach((value) => {
+    /* values.forEach((value) => {
       if (Number.isNaN(value)) throw new Error('not a number');
-    });
+    }); */
 
     this.values = values;
   }
@@ -58,7 +58,7 @@ export class Vector {
   }
 
   multiply(factor: number) {
-    if (Number.isNaN(factor)) throw new Error('not a number');
+    // if (Number.isNaN(factor)) throw new Error('not a number');
 
     const result = this.clone();
     result.values = result.values.map((value) => value * factor);
@@ -68,7 +68,7 @@ export class Vector {
   divide(divisor: number) {
     if (divisor === 0) throw new Error('division by zero');
 
-    if (Number.isNaN(divisor)) throw new Error('not a number');
+    // if (Number.isNaN(divisor)) throw new Error('not a number');
 
     const result = this.clone();
     result.values = result.values.map((value) => value / divisor);

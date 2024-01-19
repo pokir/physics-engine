@@ -1,17 +1,13 @@
-import { Vector } from '../../math/vector.js';
+import { Collider } from '../collider.js';
+import { PhysicsObject } from '../physics_object.js';
+import { Transform } from '../transform.js';
 
-export class Point {
-  position: Vector;
-
-  velocity: Vector;
-
-  constructor(position: Vector) {
-    this.position = position;
-
-    this.velocity = new Vector(0, 0, 0);
+export class Point extends PhysicsObject {
+  constructor(transform: Transform) {
+    super(transform, new Collider());
   }
 
   update(dt: number) {
-    this.position = this.position.add(this.velocity);
+    super.update(dt);
   }
 }

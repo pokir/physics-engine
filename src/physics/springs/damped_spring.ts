@@ -13,8 +13,8 @@ export class DampedSpring extends Spring {
     super.update(dt);
 
     // calculate the damping force
-    const direction = this.point2.position
-      .subtract(this.point1.position)
+    const direction = this.point2.transform.position
+      .subtract(this.point1.transform.position)
       .normalize();
 
     const relativeVelocity = this.point2.velocity.subtract(this.point1.velocity);

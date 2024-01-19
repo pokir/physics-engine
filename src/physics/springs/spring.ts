@@ -1,6 +1,7 @@
-import { MassPoint } from '../points/mass_point';
+import { MassPoint } from '../points/mass_point.js';
+import { Updatable } from '../../updateable.js';
 
-export class Spring {
+export class Spring implements Updatable {
   stiffness: number;
 
   restLength: number;
@@ -21,7 +22,7 @@ export class Spring {
   }
 
   update(dt: number) {
-    const displacement = this.point2.position.subtract(this.point1.position);
+    const displacement = this.point2.transform.position.subtract(this.point1.transform.position);
     const lengthDifference = displacement.getNorm() - this.restLength;
 
     const force = displacement
