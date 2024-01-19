@@ -1,13 +1,16 @@
 import { Updatable } from './updateable';
 
 export class World {
+  timeStep: number;
+
+  time: number = 0;
+
   updatables: Updatable[];
 
-  lastUpdateTime: number;
+  constructor(timeStep: number) {
+    this.timeStep = timeStep;
 
-  constructor() {
     this.updatables = [];
-    this.lastUpdateTime = Date.now();
   }
 
   register(...updatables: Updatable[]) {
@@ -15,13 +18,10 @@ export class World {
   }
 
   simulate() {
-    const currentTime = Date.now();
-
     this.updatables.forEach((updatable) => {
-      const dt = (currentTime - this.lastUpdateTime) / 1000;
-      updatable.update(dt);
+      updatable.update(this.timeStep);
     });
 
-    this.lastUpdateTime = currentTime;
+    this.time += this.timeStep;
   }
 }

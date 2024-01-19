@@ -5,10 +5,10 @@ import { Point } from '../dist/physics/points/point.js';
 
 class MainWorld extends World {
   // GRAVITY = 9.81;
-  GRAVITY = 0;
+  GRAVITY = 0.1;
 
-  constructor() {
-    super();
+  constructor(timeStep) {
+    super(timeStep);
 
     this.gravitationalAcceleration = new Vector(0, this.GRAVITY, 0);
 
@@ -17,13 +17,15 @@ class MainWorld extends World {
     this.sphere = SoftBody.createCube(1, 1, 300, 15);
     // this.sphere.points[0].transform.position = this.sphere.points[0].transform.position.add(new Vector(0.5, 0, 0));
 
-    this.sphere.points[0].applyForce(new Vector(Math.random(), Math.random(), Math.random()).multiply(10));
-
     this.register(...this.sphere.points, ...this.sphere.connections);
   }
 
   simulate() {
     super.simulate();
+
+    if (this.time < 0.2) {
+      this.sphere.points[0].applyForce(new Vector(1, 0, 0).multiply(10));
+    }
 
     this.sphere.points.forEach((point) => {
       point.applyForce(this.gravitationalAcceleration.multiply(point.mass));
@@ -32,7 +34,11 @@ class MainWorld extends World {
 }
 
 const sketch = (p) => {
-  const world = new MainWorld();
+  const timeStep = 1 / 60;
+
+  const world = new MainWorld(timeStep);
+
+  let lastTime = Date.now() / 1000;
 
   p.setup = () => {
     p.createCanvas(600, 600, p.WEBGL);
@@ -77,8 +83,19 @@ const sketch = (p) => {
       p.pop();
     });
 
-    // if (p.frameCount === 0) world.simulate();
-    world.simulate();
+    const currentTime = Date.now() / 1000;
+
+    // number of times to update the simulation
+    const numUpdates = Math.floor((currentTime - lastTime) / timeStep);
+
+    for (let i = 0; i < numUpdates; i += 1) {
+      world.simulate();
+    }
+
+    // time left to simulate due to rounding
+    const nonSimulatedTime = (currentTime - lastTime) - numUpdates * timeStep;
+
+    lastTime = currentTime - nonSimulatedTime;
   };
 };
 
