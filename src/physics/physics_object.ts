@@ -1,6 +1,6 @@
 import { Vector } from '../math/vector.js';
 import { Collider } from './collider.js';
-import { Updatable } from '../updateable.js';
+import { Updatable } from '../updatable.js';
 import { Transform } from './transform.js';
 
 export class PhysicsObject implements Updatable {

@@ -60,7 +60,10 @@ export class SoftBody {
 
     for (let i = 0; i < points.length - 1; i += 1) {
       for (let j = i + 1; j < points.length; j += 1) {
-        const distance = points[j].transform.position.subtract(points[i].transform.position).getNorm();
+        const distance = points[j].transform.position
+          .subtract(points[i].transform.position)
+          .getNorm();
+
         connections.push(new DampedSpring(stiffness, damping, distance, points[i], points[j]));
       }
     }
@@ -85,6 +88,7 @@ export class SoftBody {
     ));
 
     const sides = [
+      // sides
       [0, 1],
       [0, 2],
       [0, 4],
@@ -97,26 +101,31 @@ export class SoftBody {
       [4, 6],
       [2, 3],
       [2, 6],
-    ];
 
-    const diagonals = [
+      // face diagonals
       [0, 3],
       [1, 7],
       [5, 6],
       [4, 2],
       [1, 4],
       [2, 7],
+
+      // inner diagonals
+      [0, 7],
+      [1, 6],
+      [2, 5],
+      [3, 4],
     ];
 
     const connections = [];
 
-    connections.push(...sides.map(([i, j]) => (
-      new DampedSpring(stiffness, damping, sideLength, points[i], points[j])
-    )));
+    connections.push(...sides.map(([i, j]) => {
+      const distance = points[i].transform.position
+        .subtract(points[j].transform.position)
+        .getNorm();
 
-    connections.push(...diagonals.map(([i, j]) => (
-      new DampedSpring(stiffness, damping, Math.sqrt(2) * sideLength, points[i], points[j])
-    )));
+      return new DampedSpring(stiffness, damping, distance, points[i], points[j]);
+    }));
 
     return new SoftBody(points, connections);
   }

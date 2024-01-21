@@ -1,5 +1,5 @@
+import { Updatable } from '../../updatable.js';
 import { MassPoint } from '../points/mass_point.js';
-import { Updatable } from '../../updateable.js';
 
 export class Spring implements Updatable {
   stiffness: number;

@@ -1,16 +1,13 @@
-import {
-  World, Vector, SoftBody, MassPoint, Spring,
-} from '../dist/index.js';
+import { World } from '../dist/world.js';
+import { Vector } from '../dist/math/vector.js';
+import { SoftBody } from '../dist/physics/bodies/soft_body.js';
+import { Spring } from '../dist/physics/springs/spring.js';
 import { Point } from '../dist/physics/points/point.js';
+import { Gravity } from '../dist/physics/force_generators/gravity.js';
 
 class MainWorld extends World {
-  // GRAVITY = 9.81;
-  GRAVITY = 0.1;
-
   constructor(timeStep) {
     super(timeStep);
-
-    this.gravitationalAcceleration = new Vector(0, this.GRAVITY, 0);
 
     // this.sphere = SoftBody.createSphere(1, 10, 1, 300, 20);
     // this.sphere = SoftBody.createLine(1, 1, 300, 20);
@@ -18,6 +15,8 @@ class MainWorld extends World {
     // this.sphere.points[0].transform.position = this.sphere.points[0].transform.position.add(new Vector(0.5, 0, 0));
 
     this.register(...this.sphere.points, ...this.sphere.connections);
+
+    this.addForceGenerator(new Gravity(0));
   }
 
   simulate() {
@@ -25,11 +24,8 @@ class MainWorld extends World {
 
     if (this.time < 0.2) {
       this.sphere.points[0].applyForce(new Vector(1, 0, 0).multiply(10));
+      this.sphere.points[5].applyForce(new Vector(-1, 0, 0).multiply(10));
     }
-
-    this.sphere.points.forEach((point) => {
-      point.applyForce(this.gravitationalAcceleration.multiply(point.mass));
-    });
   }
 }
 
