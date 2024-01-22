@@ -1,9 +1,11 @@
 import { World } from '../dist/world.js';
 import { Vector } from '../dist/math/vector.js';
 import { SoftBody } from '../dist/physics/bodies/soft_body.js';
+import { RigidBody } from '../dist/physics/bodies/rigid_body.js';
 import { Spring } from '../dist/physics/springs/spring.js';
-import { Point } from '../dist/physics/points/point.js';
+import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
+import { PhysicsObject } from '../dist/physics/physics_object.js';
 
 class MainWorld extends World {
   constructor(timeStep) {
@@ -14,7 +16,10 @@ class MainWorld extends World {
     this.sphere = SoftBody.createCube(1, 1, 300, 15);
     // this.sphere.points[0].transform.position = this.sphere.points[0].transform.position.add(new Vector(0.5, 0, 0));
 
+    this.cube = RigidBody.createCube(1, 10);
+
     this.register(...this.sphere.points, ...this.sphere.connections);
+    this.register(this.cube);
 
     this.addForceGenerator(new Gravity(0));
   }
@@ -23,8 +28,10 @@ class MainWorld extends World {
     super.simulate();
 
     if (this.time < 0.2) {
-      this.sphere.points[0].applyForce(new Vector(1, 0, 0).multiply(10));
-      this.sphere.points[5].applyForce(new Vector(-1, 0, 0).multiply(10));
+      this.cube.applyTorque(new Vector(1, 1, 1).multiply(100));
+      // this.sphere.points[0].applyForce(new Vector(1, 0, 0).multiply(10));
+      // this.sphere.points[5].applyForce(new Vector(-1, 0, 0).multiply(10));
+      // this.sphere.points(0).applyTorque(new
     }
   }
 }
@@ -48,18 +55,28 @@ const sketch = (p) => {
     world.updatables.forEach((updatable) => {
       p.push();
 
-      if (updatable instanceof Point) {
-        // p.noStroke();
-        // p.fill(255, 0, 0);
-        p.stroke(255, 0, 0);
-        p.strokeWeight(20);
+      if (updatable instanceof PhysicsObject) {
+        const { position, rotation } = updatable.transform;
 
-        // p.translate(updatable.transform.position.get(0) * 100, updatable.transform.position.get(1) * 100, updatable.transform.position.get(2) * 100);
-        const { position } = updatable.transform;
-        p.point(position.get(0) * 100, position.get(1) * 100, position.get(2) * 100);
-        // p.sphere(5);
+        const angle = Math.acos(rotation.get(0));
+        const axis = [rotation.get(1), rotation.get(2), rotation.get(3)]
+          .map((value) => value / Math.sin(angle));
+
+        p.rotate(angle, axis);
+        p.translate(position.get(0) * 100, position.get(1) * 100, position.get(2) * 100);
+      }
+
+      if (updatable instanceof MassPoint) {
+        p.noStroke();
+        p.fill(255, 0, 0);
+
+        p.sphere(5);
+      } else if (updatable instanceof RigidBody) {
+        p.noStroke();
+        p.fill(255, 0, 0);
+
+        p.box(50);
       } else if (updatable instanceof Spring) {
-        // console.log(updatable.point1, updatable.point2);
         p.noFill();
         p.stroke(255, 255, 255);
 

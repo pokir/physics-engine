@@ -20,8 +20,8 @@ export class SoftBody {
     stiffness: number,
     damping: number,
   ) {
-    const point1 = new MassPoint(massPerPoint, new Transform(new Vector(-length / 2, 0, 0)));
-    const point2 = new MassPoint(massPerPoint, new Transform(new Vector(length / 2, 0, 0)));
+    const point1 = new MassPoint(new Transform(new Vector(-length / 2, 0, 0)), massPerPoint);
+    const point2 = new MassPoint(new Transform(new Vector(length / 2, 0, 0)), massPerPoint);
 
     const spring = new DampedSpring(stiffness, damping, length, point1, point2);
 
@@ -54,7 +54,7 @@ export class SoftBody {
         const x = Math.sin(currentAngle) * currentRadius;
         const z = Math.cos(currentAngle) * currentRadius;
 
-        points.push(new MassPoint(massPerPoint, new Transform(new Vector(x, y, z))));
+        points.push(new MassPoint(new Transform(new Vector(x, y, z)), massPerPoint));
       }
     }
 
@@ -84,7 +84,7 @@ export class SoftBody {
     ];
 
     const points = positions.map((position) => (
-      new MassPoint(massPerPoint, new Transform(position.multiply(sideLength / 2)))
+      new MassPoint(new Transform(position.multiply(sideLength / 2)), massPerPoint)
     ));
 
     const sides = [

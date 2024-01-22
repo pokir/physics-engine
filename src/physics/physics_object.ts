@@ -18,6 +18,6 @@ export class PhysicsObject implements Updatable {
   }
 
   update(dt: number) {
-    this.transform.position = this.transform.position.add(this.velocity.multiply(dt));
+    this.transform.translate(this.velocity.multiply(dt));
   }
 }

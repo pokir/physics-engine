@@ -82,4 +82,25 @@ export class Vector {
 
     return this.divide(norm);
   }
+
+  cross(vector: Vector) {
+    if (this.getDimension() !== 3 || vector.getDimension() !== 3) throw new Error('cross product on vectors with dimensions not equal to 3');
+
+    return new Vector(
+      this.values[1] * vector.values[2] - this.values[2] * vector.values[1],
+      this.values[0] * vector.values[2] - this.values[2] * vector.values[0],
+      this.values[0] * vector.values[1] - this.values[1] * vector.values[0],
+    );
+  }
+
+  hamilton(vector: Vector) {
+    if (this.getDimension() !== 4 || vector.getDimension() !== 4) throw new Error('hamilton product on vectors with dimensions not equal to 4');
+
+    return new Vector(
+      this.values[0] * vector.values[0] - this.values[1] * vector.values[1] - this.values[2] * vector.values[2] - this.values[3] * vector.values[3],
+      this.values[0] * vector.values[1] + this.values[1] * vector.values[0] + this.values[2] * vector.values[3] - this.values[3] * vector.values[2],
+      this.values[0] * vector.values[2] - this.values[1] * vector.values[3] + this.values[2] * vector.values[0] + this.values[3] * vector.values[1],
+      this.values[0] * vector.values[3] + this.values[1] * vector.values[2] - this.values[2] * vector.values[1] + this.values[3] * vector.values[0],
+    );
+  }
 }
