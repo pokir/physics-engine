@@ -18,7 +18,7 @@ export class Transform {
   }
 
   rotate(angle: number, axis: Vector) {
-    const newRotation = new Vector(Math.cos(angle), ...axis.multiply(Math.sin(angle)).values);
+    const newRotation = new Vector(Math.cos(angle), ...axis.multiply(Math.sin(angle)).getValues());
     this.rotation = this.rotation.hamilton(newRotation);
   }
 
