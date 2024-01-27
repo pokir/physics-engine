@@ -7,7 +7,7 @@ export class Transform {
 
   scaling: Vector;
 
-  constructor(position: Vector = new Vector(0, 0, 0), rotation: Vector = new Vector(0, 1, 0, 0), scaling: Vector = new Vector(0, 0, 0)) {
+  constructor(position: Vector = new Vector(0, 0, 0), rotation: Vector = new Vector(1, 0, 0, 0), scaling: Vector = new Vector(0, 0, 0)) {
     this.position = position;
     this.rotation = rotation;
     this.scaling = scaling;
