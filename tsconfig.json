@@ -2,6 +2,7 @@
   "extends": "@tsconfig/recommended/tsconfig.json",
   "compilerOptions": {
     "module": "es6",
+    "lib": ["es2016", "dom"],
     "outDir": "dist"
   },
   "include": ["src/**/*"]
