@@ -1,5 +1,5 @@
 import { ForceGenerator } from './physics/force_generators/force_generator.js';
-import { MassPoint } from './physics/points/mass_point.js';
+import { MassPhysicsObject } from './physics/mass_physics_object.js';
 import { Updatable } from './updatable.js';
 
 export class World {
@@ -27,8 +27,8 @@ export class World {
     this.updatables.forEach((updatable) => {
       updatable.update(this.timeStep);
 
-      // apply the forces of force generators on mass points
-      if (updatable instanceof MassPoint) {
+      // apply the forces of force generators on objects with mass
+      if (updatable instanceof MassPhysicsObject) {
         this.forceGenerators.forEach((forceGenerator) => {
           forceGenerator.apply(updatable);
         });
