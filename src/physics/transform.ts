@@ -1,13 +1,18 @@
+import { Quaternion } from '../math/quaternion.js';
 import { Vector } from '../math/vector.js';
 
 export class Transform {
   position: Vector;
 
-  rotation: Vector;
+  rotation: Quaternion;
 
   scaling: Vector;
 
-  constructor(position: Vector = new Vector(0, 0, 0), rotation: Vector = new Vector(1, 0, 0, 0), scaling: Vector = new Vector(0, 0, 0)) {
+  constructor(
+    position: Vector = new Vector(0, 0, 0),
+    rotation: Quaternion = new Quaternion(1, 0, 0, 0),
+    scaling: Vector = new Vector(0, 0, 0),
+  ) {
     this.position = position;
     this.rotation = rotation;
     this.scaling = scaling;
@@ -18,8 +23,11 @@ export class Transform {
   }
 
   rotate(angle: number, axis: Vector) {
-    const newRotation = new Vector(Math.cos(angle), ...axis.multiply(Math.sin(angle)).getValues());
-    this.rotation = this.rotation.hamilton(newRotation);
+    const newRotation = new Quaternion(
+      Math.cos(angle / 2),
+      ...axis.multiply(Math.sin(angle / 2)).getValues(),
+    );
+    this.rotation = newRotation.hamilton(this.rotation);
   }
 
   scale(scaling: Vector) {

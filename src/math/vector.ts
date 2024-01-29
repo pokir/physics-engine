@@ -1,4 +1,5 @@
 import { Matrix } from './matrix.js';
+import { Quaternion } from './quaternion.js';
 
 export class Vector extends Matrix {
   constructor(...values: number[]) {
@@ -11,8 +12,8 @@ export class Vector extends Matrix {
     return new Vector(...vectorAsMatrix.values.map((line) => line[0]));
   }
 
-  clone(): Vector {
-    return Vector.fromMatrix(Vector.fromMatrix(super.clone()));
+  clone() {
+    return Vector.fromMatrix(super.clone());
   }
 
   getValues() {
@@ -69,20 +70,23 @@ export class Vector extends Matrix {
 
     return new Vector(
       this.get(1) * vector.get(2) - this.get(2) * vector.get(1),
-      this.get(0) * vector.get(2) - this.get(2) * vector.get(0),
+      this.get(2) * vector.get(0) - this.get(0) * vector.get(2),
       this.get(0) * vector.get(1) - this.get(1) * vector.get(0),
     );
   }
 
-  // TODO: move to separate file: Quaternion
-  hamilton(vector: Vector) {
-    if (this.getDimension() !== 4 || vector.getDimension() !== 4) throw new Error('hamilton product on vectors with dimensions not equal to 4');
+  applyQuaternionRotation(quaternion: Quaternion) {
+    // quaternion must be a unit quaternion
+    if (this.getDimension() !== 3) throw new Error('cannot rotate vector that is not 3 dimensional');
 
-    return new Vector(
-      this.get(0) * vector.get(0) - this.get(1) * vector.get(1) - this.get(2) * vector.get(2) - this.get(3) * vector.get(3),
-      this.get(0) * vector.get(1) + this.get(1) * vector.get(0) + this.get(2) * vector.get(3) - this.get(3) * vector.get(2),
-      this.get(0) * vector.get(2) - this.get(1) * vector.get(3) + this.get(2) * vector.get(0) + this.get(3) * vector.get(1),
-      this.get(0) * vector.get(3) + this.get(1) * vector.get(2) - this.get(2) * vector.get(1) + this.get(3) * vector.get(0),
+    const axis = new Vector(...quaternion.getValues().slice(1));
+    const scalar = quaternion.get(0);
+
+    // https://gamedev.stackexchange.com/a/50545
+    return axis.multiply(2 * axis.dot(this)).add(
+      this.multiply(scalar ** 2 - axis.getNorm() ** 2),
+    ).add(
+      axis.cross(this).multiply(2 * scalar),
     );
   }
 }

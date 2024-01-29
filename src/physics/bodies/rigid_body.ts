@@ -12,19 +12,27 @@ export class RigidBody extends MassPhysicsObject {
   totalTorque: Vector = new Vector(0, 0, 0);
 
   constructor(transform: Transform, collider: Collider, mass: number, inertiaTensor: Matrix) {
+    // inertiaTensor must be in the (x, y, z) base relative to the object
     super(transform, collider, mass);
 
     this.inertiaTensor = inertiaTensor;
   }
 
   update(dt: number) {
+    const { rotation } = this.transform;
+
+    // rotate the vectors to represent them in the same base as the inertia tensor
+    const rotatedAngularVelocity = this.angularVelocity
+      .applyQuaternionRotation(rotation.conjugate());
+    const rotatedTotalTorque = this.totalTorque.applyQuaternionRotation(rotation.conjugate());
+
     const angularAcceleration = Vector.fromMatrix(this.inertiaTensor.inverse().product(
-      this.totalTorque.subtract(
-        this.angularVelocity.cross(
-          Vector.fromMatrix(this.inertiaTensor.product(this.angularVelocity)),
+      rotatedTotalTorque.subtract(
+        rotatedAngularVelocity.cross(
+          Vector.fromMatrix(this.inertiaTensor.product(rotatedAngularVelocity)),
         ),
       ),
-    ));
+    )).applyQuaternionRotation(rotation);
 
     this.angularVelocity = this.angularVelocity.add(angularAcceleration.multiply(dt));
 
@@ -49,6 +57,15 @@ export class RigidBody extends MassPhysicsObject {
       [(2 * (sideLength ** 2)) * (mass / 12), 0, 0],
       [0, (2 * (sideLength ** 2)) * (mass / 12), 0],
       [0, 0, (2 * (sideLength ** 2)) * (mass / 12)],
+    ]);
+    return new RigidBody(new Transform(), new Collider(), mass, inertiaTensor);
+  }
+
+  static createDisk(radius: number, mass: number) {
+    const inertiaTensor = new Matrix([3, 3], [
+      [(radius ** 2) * (mass / 4), 0, 0],
+      [0, (radius ** 2) * (mass / 4), 0],
+      [0, 0, (radius ** 2) * (mass / 2)],
     ]);
     return new RigidBody(new Transform(), new Collider(), mass, inertiaTensor);
   }

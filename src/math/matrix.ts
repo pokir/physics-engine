@@ -110,6 +110,14 @@ export class Matrix {
     return result;
   }
 
+  inInputBase(baseMatrix: Matrix) {
+    return this.product(baseMatrix);
+  }
+
+  inOutputBase(baseMatrix: Matrix) {
+    return baseMatrix.inverse().product(this);
+  }
+
   augment(matrix: Matrix) {
     // concatenate a matrix to the right
     if (this.dimensions[0] !== matrix.dimensions[0]) throw new Error('matrix dimensions do not match');
