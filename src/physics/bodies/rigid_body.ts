@@ -7,15 +7,19 @@ import { Transform } from '../transform.js';
 export class RigidBody extends MassPhysicsObject {
   inertiaTensor: Matrix;
 
+  // store the inverse inertia tensor to avoid recalculating it every time
+  inverseInertiaTensor: Matrix;
+
   angularVelocity: Vector = new Vector(0, 0, 0);
 
   totalTorque: Vector = new Vector(0, 0, 0);
 
   constructor(transform: Transform, collider: Collider, mass: number, inertiaTensor: Matrix) {
-    // inertiaTensor must be in the (x, y, z) base relative to the object
+    // inertiaTensor must be in the (x, y, z) basis relative to the object
     super(transform, collider, mass);
 
     this.inertiaTensor = inertiaTensor;
+    this.inverseInertiaTensor = this.inertiaTensor.inverse();
   }
 
   update(dt: number) {
@@ -26,7 +30,7 @@ export class RigidBody extends MassPhysicsObject {
       .applyQuaternionRotation(rotation.conjugate());
     const rotatedTotalTorque = this.totalTorque.applyQuaternionRotation(rotation.conjugate());
 
-    const angularAcceleration = Vector.fromMatrix(this.inertiaTensor.inverse().product(
+    const angularAcceleration = Vector.fromMatrix(this.inverseInertiaTensor.product(
       rotatedTotalTorque.subtract(
         rotatedAngularVelocity.cross(
           Vector.fromMatrix(this.inertiaTensor.product(rotatedAngularVelocity)),
