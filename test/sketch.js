@@ -11,27 +11,28 @@ class MainWorld extends World {
   constructor(timeStep) {
     super(timeStep);
 
-    // this.sphere = SoftBody.createSphere(1, 10, 1, 300, 20);
-    // this.sphere = SoftBody.createLine(1, 1, 300, 20);
-    this.sphere = SoftBody.createCube(1, 1, 300, 15);
-    // this.sphere.points[0].transform.position = this.sphere.points[0].transform.position.add(new Vector(0.5, 0, 0));
+    this.softCube = SoftBody.createCube(1, 1, 300, 15);
+    this.softCube.points[0].transform.position = this.softCube.points[0].transform.position
+      .add(new Vector(20, 0, 0));
 
-    this.cube = RigidBody.createCube(1, 10);
+    this.rigidCube = RigidBody.createCube(1, 10);
 
-    this.register(...this.sphere.points, ...this.sphere.connections);
-    this.register(this.cube);
-
-    this.addForceGenerator(new Gravity(0));
+    this.register(...this.softCube.points, ...this.softCube.connections);
+    this.register(this.rigidCube);
   }
 
   simulate() {
     super.simulate();
 
-    if (this.time < 0.2) {
-      this.cube.applyTorque(new Vector(1, 1, 1).multiply(100));
-      // this.sphere.points[0].applyForce(new Vector(1, 0, 0).multiply(10));
-      // this.sphere.points[5].applyForce(new Vector(-1, 0, 0).multiply(10));
-      // this.sphere.points(0).applyTorque(new
+    if (this.time < 5) {
+      this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(10));
+    } else if (this.time < 100) {
+      this.rigidCube.applyTorque(new Vector(0, 0, 1).multiply(10));
+    }
+
+    if (this.time < 2) {
+      this.softCube.points[0].applyForce(new Vector(1, 0, 0).multiply(30));
+      this.softCube.points[1].applyForce(new Vector(-1, 0, 0).multiply(30));
     }
   }
 }
@@ -52,18 +53,24 @@ const sketch = (p) => {
 
     p.orbitControl();
 
+    p.push();
+    p.stroke(0, 255, 0);
+    p.line(0, 0, 0, 100, 0, 0);
+    p.line(0, 0, 0, 0, 100, 0);
+    p.line(0, 0, 0, 0, 0, 100);
+    p.pop();
+
     world.updatables.forEach((updatable) => {
       p.push();
 
       if (updatable instanceof PhysicsObject) {
         const { position, rotation } = updatable.transform;
 
-        const angle = Math.acos(rotation.get(0));
-        const axis = [rotation.get(1), rotation.get(2), rotation.get(3)]
-          .map((value) => value / Math.sin(angle));
+        const angle = Math.acos(rotation.get(0)) * 2;
+        const axis = rotation.getValues().slice(1);
 
-        p.rotate(angle, axis);
         p.translate(position.get(0) * 100, position.get(1) * 100, position.get(2) * 100);
+        if (!axis.every((value) => value === 0)) p.rotate(angle, axis);
       }
 
       if (updatable instanceof MassPoint) {
@@ -72,7 +79,7 @@ const sketch = (p) => {
 
         p.sphere(5);
       } else if (updatable instanceof RigidBody) {
-        p.noStroke();
+        p.stroke(0, 0, 0);
         p.fill(255, 0, 0);
 
         p.box(50);
@@ -100,6 +107,12 @@ const sketch = (p) => {
 
     // number of times to update the simulation
     const numUpdates = Math.floor((currentTime - lastTime) / timeStep);
+
+    // avoid updating too many times in a single frame to avoid lag
+    if (numUpdates > 5) {
+      lastTime = currentTime;
+      return;
+    }
 
     for (let i = 0; i < numUpdates; i += 1) {
       world.simulate();
