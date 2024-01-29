@@ -1,5 +1,5 @@
-import { MassPoint } from '../points/mass_point';
+import { MassPhysicsObject } from '../mass_physics_object';
 
 export abstract class ForceGenerator {
-  abstract apply(target: MassPoint): void;
+  abstract apply(target: MassPhysicsObject): void;
 }
