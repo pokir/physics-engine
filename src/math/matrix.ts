@@ -110,12 +110,12 @@ export class Matrix {
     return result;
   }
 
-  inInputBase(baseMatrix: Matrix) {
-    return this.product(baseMatrix);
+  inInputBasis(basisMatrix: Matrix) {
+    return this.product(basisMatrix);
   }
 
-  inOutputBase(baseMatrix: Matrix) {
-    return baseMatrix.inverse().product(this);
+  inOutputBasis(basisMatrix: Matrix) {
+    return basisMatrix.inverse().product(this);
   }
 
   augment(matrix: Matrix) {
