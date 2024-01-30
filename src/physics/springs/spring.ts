@@ -1,3 +1,4 @@
+import { Vector } from '../../math/vector.js';
 import { Updatable } from '../../updatable.js';
 import { MassPoint } from '../points/mass_point.js';
 
@@ -22,14 +23,16 @@ export class Spring implements Updatable {
   }
 
   update(dt: number) {
-    const displacement = this.point2.transform.position.subtract(this.point1.transform.position);
-    const lengthDifference = displacement.getNorm() - this.restLength;
+    const getForceFunction = (referencePoint: MassPoint) => (
+      (time: number, position: Vector, velocity: Vector) => {
+        const displacement = referencePoint.transform.position.subtract(position);
+        const lengthDifference = displacement.getNorm() - this.restLength;
 
-    const force = displacement
-      .normalize()
-      .multiply(this.stiffness * lengthDifference);
+        return displacement.normalize().multiply(this.stiffness * lengthDifference);
+      }
+    );
 
-    this.point1.applyForce(force);
-    this.point2.applyForce(force.multiply(-1));
+    this.point1.applyForce(getForceFunction(this.point2));
+    this.point2.applyForce(getForceFunction(this.point1));
   }
 }
