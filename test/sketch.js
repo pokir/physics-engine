@@ -12,27 +12,43 @@ class MainWorld extends World {
     super(timeStep);
 
     this.softCube = SoftBody.createCube(1, 1, 300, 15);
-    this.softCube.points[0].transform.position = this.softCube.points[0].transform.position
-      .add(new Vector(20, 0, 0));
+    this.softCube.points[0].transform.translate(new Vector(20, 0, 0));
 
     this.rigidCube = RigidBody.createCube(1, 10);
+    this.rigidCube.angularVelocity = this.rigidCube.angularVelocity.add(new Vector(100, 0, 0));
+    // this.rigidCube.angularVelocity = this.rigidCube.angularVelocity.add(new Vector(1, 0, 0));
+    this.rigidCube.angularVelocity = this.rigidCube.angularVelocity.add(new Vector(0, 0, 1));
+
+    this.rigidDisk = RigidBody.createDisk(1, 10);
+    this.rigidDisk.transform.translate(new Vector(0, -1, 0));
 
     this.register(...this.softCube.points, ...this.softCube.connections);
     this.register(this.rigidCube);
+    this.register(this.rigidDisk);
+
+    this.addForceGenerator(new Gravity(0));
   }
 
   simulate() {
     super.simulate();
 
+    this.rigidCube.applyForce(new Vector(1, 0, 0));
+
     if (this.time < 5) {
-      this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(10));
-    } else if (this.time < 100) {
-      this.rigidCube.applyTorque(new Vector(0, 0, 1).multiply(10));
+      this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(1));
+    } else if (this.time < 10) {
+      this.rigidCube.applyTorque(new Vector(0, 0, 1).multiply(1));
     }
 
     if (this.time < 2) {
       this.softCube.points[0].applyForce(new Vector(1, 0, 0).multiply(30));
       this.softCube.points[1].applyForce(new Vector(-1, 0, 0).multiply(30));
+    }
+
+    if (this.time < 5) {
+      this.rigidDisk.applyTorque(new Vector(0, 0, 1).multiply(10));
+    } else if (this.time < 10) {
+      this.rigidDisk.applyTorque(new Vector(1, 0, 0).multiply(10));
     }
   }
 }
@@ -44,10 +60,12 @@ const sketch = (p) => {
 
   let lastTime = Date.now() / 1000;
 
+  /* eslint-disable-next-line no-param-reassign */
   p.setup = () => {
     p.createCanvas(600, 600, p.WEBGL);
   };
 
+  /* eslint-disable-next-line no-param-reassign */
   p.draw = () => {
     p.background(51);
 
@@ -73,6 +91,8 @@ const sketch = (p) => {
         if (!axis.every((value) => value === 0)) p.rotate(angle, axis);
       }
 
+      p.strokeWeight(0.2);
+
       if (updatable instanceof MassPoint) {
         p.noStroke();
         p.fill(255, 0, 0);
@@ -82,7 +102,12 @@ const sketch = (p) => {
         p.stroke(0, 0, 0);
         p.fill(255, 0, 0);
 
-        p.box(50);
+        if (updatable === world.rigidCube) {
+          p.box(50);
+        } else if (updatable === world.rigidDisk) {
+          p.rotateX(Math.PI / 2);
+          p.cylinder(25, 5);
+        }
       } else if (updatable instanceof Spring) {
         p.noFill();
         p.stroke(255, 255, 255);
@@ -125,4 +150,5 @@ const sketch = (p) => {
   };
 };
 
+/* eslint-disable-next-line no-undef, new-cap, no-new */
 new p5(sketch, document.getElementsByTagName('main')[0]);
