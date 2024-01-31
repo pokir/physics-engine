@@ -34,18 +34,13 @@ class MainWorld extends World {
       this.softCube.points[7].applyForce(new Vector(-1, 0, 0).multiply(30));
     }
 
-    this.rigidCube.applyForce(new Vector(1, 0, 0));
+    this.rigidCube.applyForceAtPoint(new Vector(1, 0, 0), new Vector(0, -1, 0));
+    this.rigidCube.applyForce(new Vector(0, -1, 0));
 
     if (this.time < 5) {
-      this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(30));
-    } else if (this.time > 0) {
-      this.rigidCube.applyTorque(new Vector(0, 0, 1).multiply(30));
-    }
-
-    if (this.time < 5) {
-      this.rigidDisk.applyTorque(new Vector(0, 0, 1).multiply(10));
+      this.rigidDisk.applyTorque(new Vector(0, 0, 1).multiply(100));
     } else if (this.time < 10) {
-      this.rigidDisk.applyTorque(new Vector(1, 0, 0).multiply(10));
+      this.rigidDisk.applyTorque(new Vector(1, 0, 0).multiply(100));
     }
   }
 }

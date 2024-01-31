@@ -62,6 +62,12 @@ export class RigidBody extends MassPhysicsObject {
     this.totalTorque = this.totalTorque.add(torque);
   }
 
+  applyForceAtPoint(force: Vector, point: Vector) {
+    // applies force and torque at the same time
+    this.applyForce(force);
+    this.applyTorque(point.subtract(this.transform.position).cross(force));
+  }
+
   static createCube(sideLength: number, mass: number) {
     const inertiaTensor = new Matrix([3, 3], [
       [(2 * (sideLength ** 2)) * (mass / 12), 0, 0],
