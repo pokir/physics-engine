@@ -1,6 +1,6 @@
 import { Vector } from '../vector.js';
 
-export type FirstOrderOrdinaryDifferentialEquationSystemSolver = <n extends number>(
+export type FirstOrderOrdinaryDifferentialEquationSystemSolver<n extends number> = (
   // every variable in the last state
   lastState: Vector[] & { length: n },
   lastTime: number,

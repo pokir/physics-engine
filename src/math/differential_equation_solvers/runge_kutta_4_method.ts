@@ -2,7 +2,7 @@ import { Vector } from '../vector.js';
 import { FirstOrderOrdinaryDifferentialEquationSystemSolver } from './first_order_ordinary_differential_equation_system_solver.js';
 
 export const rungeKutta4Method:
-  FirstOrderOrdinaryDifferentialEquationSystemSolver = <n extends number>(
+  FirstOrderOrdinaryDifferentialEquationSystemSolver<number> = <n extends number>(
     lastState: Vector[] & { length: n },
     lastTime: number,
     deltaTime: number,
