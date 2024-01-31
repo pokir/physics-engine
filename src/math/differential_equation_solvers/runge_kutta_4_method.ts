@@ -2,13 +2,11 @@ import { Vector } from '../vector.js';
 import { FirstOrderOrdinaryDifferentialEquationSystemSolver } from './first_order_ordinary_differential_equation_system_solver.js';
 
 export const rungeKutta4Method:
-  FirstOrderOrdinaryDifferentialEquationSystemSolver<number> = <n extends number>(
-    lastState: Vector[] & { length: n },
-    lastTime: number,
-    deltaTime: number,
-    derivativeFunctions: (
-    (time: number, state: Vector[] & { length: n }) => Vector
-  )[] & { length: n },
+  FirstOrderOrdinaryDifferentialEquationSystemSolver<number> = (
+    lastState,
+    lastTime,
+    deltaTime,
+    derivativeFunctions,
   ) => {
     const k1s: Vector[] = [];
     const k2s: Vector[] = [];
@@ -26,7 +24,7 @@ export const rungeKutta4Method:
         lastTime + deltaTime / 2,
         lastState.map(
           (lastValue, i) => lastValue.add(k1s[i].divide(2).multiply(deltaTime)),
-        ) as Vector[] & { length: n },
+        ),
       );
 
       k2s.push(k2);
@@ -37,7 +35,7 @@ export const rungeKutta4Method:
         lastTime + deltaTime / 2,
         lastState.map(
           (lastValue, i) => lastValue.add(k2s[i].divide(2).multiply(deltaTime)),
-        ) as Vector[] & { length: n },
+        ),
       );
 
       k3s.push(k3);
@@ -48,7 +46,7 @@ export const rungeKutta4Method:
         lastTime + deltaTime,
         lastState.map(
           (lastValue, i) => lastValue.add(k3s[i].multiply(deltaTime)),
-        ) as Vector[] & { length: n },
+        ),
       );
 
       k4s.push(k4);
@@ -60,5 +58,5 @@ export const rungeKutta4Method:
         .add(k3s[i].divide(3))
         .add(k4s[i].divide(6))
         .multiply(deltaTime),
-    )) as Vector[] & { length: n };
+    ));
   };
