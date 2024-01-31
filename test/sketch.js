@@ -5,19 +5,15 @@ import { RigidBody } from '../dist/physics/bodies/rigid_body.js';
 import { Spring } from '../dist/physics/springs/spring.js';
 import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
-import { PhysicsObject } from '../dist/physics/physics_object.js';
+import { MassPhysicsObject } from '../dist/physics/mass_physics_object.js';
 
 class MainWorld extends World {
   constructor(timeStep) {
     super(timeStep);
 
     this.softCube = SoftBody.createCube(1, 1, 300, 15);
-    this.softCube.points[0].transform.translate(new Vector(20, 0, 0));
 
     this.rigidCube = RigidBody.createCube(1, 10);
-    this.rigidCube.angularVelocity = this.rigidCube.angularVelocity.add(new Vector(100, 0, 0));
-    // this.rigidCube.angularVelocity = this.rigidCube.angularVelocity.add(new Vector(1, 0, 0));
-    this.rigidCube.angularVelocity = this.rigidCube.angularVelocity.add(new Vector(0, 0, 1));
 
     this.rigidDisk = RigidBody.createDisk(1, 10);
     this.rigidDisk.transform.translate(new Vector(0, -1, 0));
@@ -32,17 +28,17 @@ class MainWorld extends World {
   simulate() {
     super.simulate();
 
-    this.rigidCube.applyForce(new Vector(1, 0, 0));
-
-    if (this.time < 5) {
-      this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(1));
-    } else if (this.time < 10) {
-      this.rigidCube.applyTorque(new Vector(0, 0, 1).multiply(1));
+    if (this.time < 0.2) {
+      this.softCube.points[0].applyConstantForce(new Vector(1, 0, 0).multiply(30));
+      this.softCube.points[7].applyConstantForce(new Vector(-1, 0, 0).multiply(30));
     }
 
-    if (this.time < 2) {
-      this.softCube.points[0].applyForce(new Vector(1, 0, 0).multiply(30));
-      this.softCube.points[1].applyForce(new Vector(-1, 0, 0).multiply(30));
+    this.rigidCube.applyConstantForce(new Vector(1, 0, 0));
+
+    if (this.time < 5) {
+      this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(30));
+    } else if (this.time > 0) {
+      this.rigidCube.applyTorque(new Vector(0, 0, 1).multiply(30));
     }
 
     if (this.time < 5) {
@@ -54,7 +50,7 @@ class MainWorld extends World {
 }
 
 const sketch = (p) => {
-  const timeStep = 1 / 60;
+  const timeStep = 1 / 120;
 
   const world = new MainWorld(timeStep);
 
@@ -78,10 +74,11 @@ const sketch = (p) => {
     p.line(0, 0, 0, 0, 0, 100);
     p.pop();
 
+    // draw the objects in the world
     world.updatables.forEach((updatable) => {
       p.push();
 
-      if (updatable instanceof PhysicsObject) {
+      if (updatable instanceof MassPhysicsObject) {
         const { position, rotation } = updatable.transform;
 
         const angle = Math.acos(rotation.get(0)) * 2;
@@ -134,7 +131,7 @@ const sketch = (p) => {
     const numUpdates = Math.floor((currentTime - lastTime) / timeStep);
 
     // avoid updating too many times in a single frame to avoid lag
-    if (numUpdates > 5) {
+    if (numUpdates > 20) {
       lastTime = currentTime;
       return;
     }
@@ -151,4 +148,4 @@ const sketch = (p) => {
 };
 
 /* eslint-disable-next-line no-undef, new-cap, no-new */
-new p5(sketch, document.getElementsByTagName('main')[0]);
+window.p = new p5(sketch, document.getElementsByTagName('main')[0]);
