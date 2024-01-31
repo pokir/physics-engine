@@ -10,6 +10,6 @@ export class Gravity implements ForceGenerator {
   }
 
   apply(target: MassPoint) {
-    target.applyConstantForce(new Vector(0, this.gravitationalAcceleration * target.mass, 0));
+    target.applyForce(new Vector(0, this.gravitationalAcceleration * target.mass, 0));
   }
 }

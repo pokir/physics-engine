@@ -19,17 +19,15 @@ export class DampedSpring extends Spring {
   update(dt: number) {
     super.update(dt);
 
-    const getForceFunction = (referencePoint: MassPoint) => (
-      (time: number, position: Vector, velocity: Vector) => {
-        // calculate the damping force
-        const direction = referencePoint.transform.position.subtract(position).normalize();
-        const relativeVelocity = referencePoint.velocity.subtract(velocity);
+    // calculate the damping force
+    const direction = this.point2.transform.position
+      .subtract(this.point1.transform.position)
+      .normalize(true);
+    const relativeVelocity = this.point2.velocity.subtract(this.point1.velocity);
 
-        return direction.multiply(relativeVelocity.dot(direction)).multiply(this.damping);
-      }
-    );
+    const force = direction.multiply(relativeVelocity.dot(direction)).multiply(this.damping);
 
-    this.point1.applyForce(getForceFunction(this.point2));
-    this.point2.applyForce(getForceFunction(this.point1));
+    this.point1.applyForce(force);
+    this.point2.applyForce(force.multiply(-1));
   }
 }

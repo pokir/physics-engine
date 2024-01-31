@@ -12,6 +12,7 @@ class MainWorld extends World {
     super(timeStep);
 
     this.softCube = SoftBody.createCube(1, 1, 300, 15);
+    this.softCube.points[0].transform.translate(new Vector(20, 0, 0));
 
     this.rigidCube = RigidBody.createCube(1, 10);
 
@@ -29,11 +30,11 @@ class MainWorld extends World {
     super.simulate();
 
     if (this.time < 0.2) {
-      this.softCube.points[0].applyConstantForce(new Vector(1, 0, 0).multiply(30));
-      this.softCube.points[7].applyConstantForce(new Vector(-1, 0, 0).multiply(30));
+      this.softCube.points[0].applyForce(new Vector(1, 0, 0).multiply(30));
+      this.softCube.points[7].applyForce(new Vector(-1, 0, 0).multiply(30));
     }
 
-    this.rigidCube.applyConstantForce(new Vector(1, 0, 0));
+    this.rigidCube.applyForce(new Vector(1, 0, 0));
 
     if (this.time < 5) {
       this.rigidCube.applyTorque(new Vector(1, 0, 0).multiply(30));
