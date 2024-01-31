@@ -58,4 +58,21 @@ export class Quaternion extends Vector {
         - this.get(2) * quaternion.get(1) + this.get(3) * quaternion.get(0),
     );
   }
+
+  toRotationVector() {
+    // this quaternion must be a unit quaternion
+    const angle = Math.acos(this.get(0)) * 2;
+
+    return new Vector(...this.getValues().slice(1))
+      .normalize(true)
+      .multiply(angle);
+  }
+
+  static fromRotationVector(vector: Vector) {
+    // returns a unit quaternion representing the rotation
+    const angle = vector.getNorm() % (Math.PI * 2);
+    const axis = vector.normalize(true);
+
+    return new Quaternion(Math.cos(angle / 2), ...axis.multiply(Math.sin(angle / 2)).getValues());
+  }
 }
