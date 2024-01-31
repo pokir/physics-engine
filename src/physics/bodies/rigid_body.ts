@@ -1,3 +1,4 @@
+import { rungeKutta4Method } from '../../math/differential_equation_solvers/runge_kutta_4_method.js';
 import { Matrix } from '../../math/matrix.js';
 import { Vector } from '../../math/vector.js';
 import { Collider } from '../collider.js';
@@ -25,29 +26,34 @@ export class RigidBody extends MassPhysicsObject {
   update(dt: number) {
     const { rotation } = this.transform;
 
-    // rotate the vectors to represent them in the same base as the inertia tensor
-    const rotatedAngularVelocity = this.angularVelocity
-      .applyQuaternionRotation(rotation.conjugate());
-    const rotatedTotalTorque = this.totalTorque.applyQuaternionRotation(rotation.conjugate());
+    [this.angularVelocity] = rungeKutta4Method([this.angularVelocity], 0, dt, [
+      (time: number, [angularVelocity]: Vector[]) => {
+        // rotate the vectors to represent them in the same basis as the inertia tensor
+        const rotatedAngularVelocity = angularVelocity
+          .applyQuaternionRotation(rotation.conjugate());
+        const rotatedTotalTorque = this.totalTorque
+          .applyQuaternionRotation(rotation.conjugate());
 
-    const angularAcceleration = Vector.fromMatrix(this.inverseInertiaTensor.product(
-      rotatedTotalTorque.subtract(
-        rotatedAngularVelocity.cross(
-          Vector.fromMatrix(this.inertiaTensor.product(rotatedAngularVelocity)),
-        ),
-      ),
-    )).applyQuaternionRotation(rotation);
+        const angularAcceleration = Vector.fromMatrix(this.inverseInertiaTensor.product(
+          rotatedTotalTorque.subtract(
+            rotatedAngularVelocity.cross(
+              Vector.fromMatrix(this.inertiaTensor.product(rotatedAngularVelocity)),
+            ),
+          ),
+        )).applyQuaternionRotation(rotation);
 
-    this.angularVelocity = this.angularVelocity.add(angularAcceleration.multiply(dt));
+        return angularAcceleration;
+      },
+    ]);
 
-    // reset torque
-    this.totalTorque = this.totalTorque.multiply(0);
-
-    // apply the rotation
+    // apply the rotation directly (no ODE solver)
     const angularSpeed = this.angularVelocity.getNorm();
     const axis = angularSpeed === 0 ? new Vector(1, 0, 0) : this.angularVelocity.normalize();
 
     this.transform.rotate(angularSpeed * dt, axis);
+
+    // reset torque
+    this.totalTorque = this.totalTorque.multiply(0);
 
     super.update(dt);
   }
