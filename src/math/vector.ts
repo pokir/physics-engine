@@ -56,10 +56,14 @@ export class Vector extends Matrix {
     return Math.sqrt(this.dot(this));
   }
 
-  normalize() {
+  normalize(ignoreZero: boolean = false) {
+    // ignoreZero: false to error if a zero vector is given, true to return the zero vector
     const norm = this.getNorm();
 
-    if (this.getNorm() === 0) throw new Error('cannot normalize zero vector');
+    if (this.getNorm() === 0) {
+      if (ignoreZero) return this; // return the zero vector
+      throw new Error('cannot normalize zero vector');
+    }
 
     return this.divide(norm);
   }
