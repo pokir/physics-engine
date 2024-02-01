@@ -1,4 +1,6 @@
+// import { Vector } from '../../math/vector.js';
 import { Vector } from '../../math/vector.js';
+import { Mesh } from '../../meshes/mesh.js';
 import { MassPoint } from '../points/mass_point.js';
 import { DampedSpring } from '../springs/damped_spring.js';
 import { Spring } from '../springs/spring.js';
@@ -12,6 +14,30 @@ export class SoftBody {
   constructor(points: MassPoint[], connections: Spring[]) {
     this.points = points;
     this.connections = connections;
+  }
+
+  static fromMesh(mesh: Mesh, mass: number, stiffness: number, damping: number) {
+    const points: MassPoint[] = [];
+    const connections: Spring[] = [];
+
+    const numPoints = mesh.vertices.length;
+    const massPerPoint = mass / numPoints;
+
+    mesh.vertices.forEach((vertex) => {
+      points.push(new MassPoint(new Transform(vertex), massPerPoint));
+    });
+
+    mesh.edges.forEach((edge) => {
+      const point1 = points[edge[0]];
+      const point2 = points[edge[1]];
+      const distance = point1.transform.position.subtract(point2.transform.position).getNorm();
+
+      connections.push(
+        new DampedSpring(stiffness, damping, distance, point1, point2),
+      );
+    });
+
+    return new SoftBody(points, connections);
   }
 
   static createLine(

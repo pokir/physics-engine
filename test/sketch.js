@@ -6,17 +6,56 @@ import { Spring } from '../dist/physics/springs/spring.js';
 import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
 import { MassPhysicsObject } from '../dist/physics/mass_physics_object.js';
+import { Mesh } from '../dist/meshes/mesh.js';
+import { Transform } from '../dist/physics/transform.js';
+
+const cubeModelPath = 'models/cube.obj';
+const diskModelPath = 'models/disk.obj';
 
 class MainWorld extends World {
   constructor(timeStep) {
     super(timeStep);
 
+    // get the meshes
+    let cubeMesh;
+    let diskMesh;
+
+    let request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        cubeMesh = Mesh.fromWavefront(this.responseText);
+      }
+    };
+    request.open('GET', cubeModelPath, false);
+    request.send();
+
+    request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+      if (this.readyState === 4 && this.status === 200) {
+        diskMesh = Mesh.fromWavefront(this.responseText);
+      }
+    };
+    request.open('GET', diskModelPath, false);
+    request.send();
+
     this.softCube = SoftBody.createCube(1, 1, 300, 15);
     this.softCube.points[0].transform.translate(new Vector(20, 0, 0));
 
-    this.rigidCube = RigidBody.createCube(1, 10);
+    const cubeMass = 10;
+    this.rigidCube = new RigidBody(
+      new Transform(),
+      cubeMass,
+      cubeMesh,
+      RigidBody.getCubeInertiaTensor(1, cubeMass),
+    );
 
-    this.rigidDisk = RigidBody.createDisk(1, 10);
+    const diskMass = 10;
+    this.rigidDisk = new RigidBody(
+      new Transform(),
+      diskMass,
+      diskMesh,
+      RigidBody.getDiskInertiaTensor(1, diskMass),
+    );
     this.rigidDisk.transform.translate(new Vector(0, -1, 0));
 
     this.register(...this.softCube.points, ...this.softCube.connections);
@@ -51,6 +90,15 @@ const sketch = (p) => {
   const world = new MainWorld(timeStep);
 
   let lastTime = Date.now() / 1000;
+
+  let cubeModel;
+  let diskModel;
+
+  /* eslint-disable-next-line no-param-reassign */
+  p.preload = () => {
+    cubeModel = p.loadModel(cubeModelPath);
+    diskModel = p.loadModel(diskModelPath);
+  };
 
   /* eslint-disable-next-line no-param-reassign */
   p.setup = () => {
@@ -96,10 +144,12 @@ const sketch = (p) => {
         p.fill(255, 0, 0);
 
         if (updatable === world.rigidCube) {
-          p.box(50);
+          p.scale(20);
+          p.model(cubeModel);
         } else if (updatable === world.rigidDisk) {
+          p.scale(20);
           p.rotateX(Math.PI / 2);
-          p.cylinder(25, 5);
+          p.model(diskModel);
         }
       } else if (updatable instanceof Spring) {
         p.noFill();

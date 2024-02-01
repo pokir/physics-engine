@@ -1,13 +1,10 @@
 import { rungeKutta4Method } from '../math/differential_equation_solvers/runge_kutta_4_method.js';
 import { Vector } from '../math/vector.js';
 import { Updatable } from '../updatable.js';
-import { Collider } from './collider.js';
 import { Transform } from './transform.js';
 
 export class MassPhysicsObject implements Updatable {
   transform: Transform;
-
-  collider: Collider;
 
   velocity: Vector = new Vector(0, 0, 0);
 
@@ -15,9 +12,8 @@ export class MassPhysicsObject implements Updatable {
 
   totalForces: Vector = new Vector(0, 0, 0);
 
-  constructor(transform: Transform, collider: Collider, mass: number) {
+  constructor(transform: Transform, mass: number) {
     this.transform = transform;
-    this.collider = collider;
     this.mass = mass;
   }
 

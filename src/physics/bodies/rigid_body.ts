@@ -1,7 +1,7 @@
 import { rungeKutta4Method } from '../../math/differential_equation_solvers/runge_kutta_4_method.js';
 import { Matrix } from '../../math/matrix.js';
 import { Vector } from '../../math/vector.js';
-import { Collider } from '../collider.js';
+import { Mesh } from '../../meshes/mesh.js';
 import { MassPhysicsObject } from '../mass_physics_object.js';
 import { Transform } from '../transform.js';
 
@@ -11,13 +11,17 @@ export class RigidBody extends MassPhysicsObject {
   // store the inverse inertia tensor to avoid recalculating it every time
   inverseInertiaTensor: Matrix;
 
+  mesh: Mesh;
+
   angularVelocity: Vector = new Vector(0, 0, 0);
 
   totalTorque: Vector = new Vector(0, 0, 0);
 
-  constructor(transform: Transform, collider: Collider, mass: number, inertiaTensor: Matrix) {
+  constructor(transform: Transform, mass: number, mesh: Mesh, inertiaTensor: Matrix) {
     // inertiaTensor must be in the (x, y, z) basis relative to the object
-    super(transform, collider, mass);
+    super(transform, mass);
+
+    this.mesh = mesh;
 
     this.inertiaTensor = inertiaTensor;
     this.inverseInertiaTensor = this.inertiaTensor.inverse();
@@ -68,21 +72,19 @@ export class RigidBody extends MassPhysicsObject {
     this.applyTorque(point.subtract(this.transform.position).cross(force));
   }
 
-  static createCube(sideLength: number, mass: number) {
-    const inertiaTensor = new Matrix([3, 3], [
+  static getCubeInertiaTensor(sideLength: number, mass: number) {
+    return new Matrix([3, 3], [
       [(2 * (sideLength ** 2)) * (mass / 12), 0, 0],
       [0, (2 * (sideLength ** 2)) * (mass / 12), 0],
       [0, 0, (2 * (sideLength ** 2)) * (mass / 12)],
     ]);
-    return new RigidBody(new Transform(), new Collider(), mass, inertiaTensor);
   }
 
-  static createDisk(radius: number, mass: number) {
-    const inertiaTensor = new Matrix([3, 3], [
+  static getDiskInertiaTensor(radius: number, mass: number) {
+    return new Matrix([3, 3], [
       [(radius ** 2) * (mass / 4), 0, 0],
       [0, (radius ** 2) * (mass / 4), 0],
       [0, 0, (radius ** 2) * (mass / 2)],
     ]);
-    return new RigidBody(new Transform(), new Collider(), mass, inertiaTensor);
   }
 }
