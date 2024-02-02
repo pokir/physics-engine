@@ -72,6 +72,10 @@ export class RigidBody extends MassPhysicsObject {
     this.applyTorque(point.subtract(this.transform.position).cross(force));
   }
 
+  getVertices() {
+    return this.mesh.vertices.map((vertex) => this.transform.applyTransform(vertex));
+  }
+
   static getCubeInertiaTensor(sideLength: number, mass: number) {
     return new Matrix([3, 3], [
       [(2 * (sideLength ** 2)) * (mass / 12), 0, 0],
@@ -80,11 +84,15 @@ export class RigidBody extends MassPhysicsObject {
     ]);
   }
 
-  static getDiskInertiaTensor(radius: number, mass: number) {
-    return new Matrix([3, 3], [
-      [(radius ** 2) * (mass / 4), 0, 0],
-      [0, (radius ** 2) * (mass / 4), 0],
-      [0, 0, (radius ** 2) * (mass / 2)],
-    ]);
+  static getDiskInertiaTensor(radius: number, mass: number, normalAxis: number) {
+    // axis: 0 for x, 1 for y, 2 for z
+    // TODO: improve axis selection
+    const planeInertia = (radius ** 2) * (mass / 4);
+    const normalInertia = (radius ** 2) * (mass / 2);
+
+    const inertiaMatrix = Matrix.identity(3).multiply(planeInertia);
+    inertiaMatrix.values[normalAxis][normalAxis] = normalInertia;
+
+    return inertiaMatrix;
   }
 }
