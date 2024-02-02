@@ -57,7 +57,7 @@ export class Mesh {
           let edgeIndex = edges.findIndex((otherEdge) => compareEdges(edge, otherEdge));
 
           // if the edge isn't in the list yet, add it
-          if (edgeIndex === -1) edgeIndex = edges.push(edge);
+          if (edgeIndex === -1) edgeIndex = edges.push(edge) - 1;
 
           faceEdgesIndices.push(edgeIndex);
         });
