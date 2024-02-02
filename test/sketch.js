@@ -5,7 +5,6 @@ import { RigidBody } from '../dist/physics/bodies/rigid_body.js';
 import { Spring } from '../dist/physics/springs/spring.js';
 import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
-import { MassPhysicsObject } from '../dist/physics/mass_physics_object.js';
 import { Mesh } from '../dist/meshes/mesh.js';
 import { Transform } from '../dist/physics/transform.js';
 
@@ -38,8 +37,8 @@ class MainWorld extends World {
     request.open('GET', diskModelPath, false);
     request.send();
 
-    this.softCube = SoftBody.createCube(1, 1, 300, 15);
-    this.softCube.points[0].transform.translate(new Vector(20, 0, 0));
+    this.softCube = SoftBody.createCube(3, 1, 300, 15);
+    this.softCube.points[0].transform.translate(new Vector(50, 0, 0));
 
     const cubeMass = 10;
     this.rigidCube = new RigidBody(
@@ -54,9 +53,10 @@ class MainWorld extends World {
       new Transform(),
       diskMass,
       diskMesh,
-      RigidBody.getDiskInertiaTensor(1, diskMass),
+      RigidBody.getDiskInertiaTensor(1, diskMass, 1),
     );
-    this.rigidDisk.transform.translate(new Vector(0, -1, 0));
+    this.rigidDisk.transform.rotate(Math.PI / 2, new Vector(1, 0, 0));
+    this.rigidDisk.transform.translate(new Vector(0, -5, 0));
 
     this.register(...this.softCube.points, ...this.softCube.connections);
     this.register(this.rigidCube);
@@ -84,21 +84,59 @@ class MainWorld extends World {
   }
 }
 
+function drawRigidBody(p, rigidBody) {
+  const vertices = rigidBody.getVertices();
+  const { edges, faces } = rigidBody.mesh;
+
+  p.stroke(0, 0, 0);
+  p.fill(255, 0, 0);
+
+  // draw each edge
+  edges.forEach((edge) => {
+    const vertex1 = vertices[edge[0]];
+    const vertex2 = vertices[edge[1]];
+
+    p.line(...vertex1.getValues(), ...vertex2.getValues());
+  });
+
+  // draw each face
+  p.noStroke();
+  faces.forEach((face) => {
+    const faceVerticesIndices = [];
+
+    face.forEach((edgeIndex, i) => {
+      const edge = edges[edgeIndex];
+
+      if (i === 0) {
+        const nextEdge = edges[face[1]];
+
+        // add the vertices of the first edge in the right order
+        if (nextEdge.includes(edge[0])) faceVerticesIndices.push(...edge.toReversed());
+        else faceVerticesIndices.push(...edge);
+
+        return;
+      }
+
+      // add the vertices in the right order
+      if (edge[0] === faceVerticesIndices[faceVerticesIndices.length - 1]) faceVerticesIndices.push(edge[1]);
+      else if (edge[1] === faceVerticesIndices[faceVerticesIndices.length - 1]) faceVerticesIndices.push(edge[0]);
+      else faceVerticesIndices.push(...edge);
+    });
+
+    p.beginShape();
+    faceVerticesIndices.forEach((vertexIndex) => {
+      p.vertex(...vertices[vertexIndex].getValues());
+    });
+    p.endShape();
+  });
+}
+
 const sketch = (p) => {
   const timeStep = 1 / 120;
 
   const world = new MainWorld(timeStep);
 
   let lastTime = Date.now() / 1000;
-
-  let cubeModel;
-  let diskModel;
-
-  /* eslint-disable-next-line no-param-reassign */
-  p.preload = () => {
-    cubeModel = p.loadModel(cubeModelPath);
-    diskModel = p.loadModel(diskModelPath);
-  };
 
   /* eslint-disable-next-line no-param-reassign */
   p.setup = () => {
@@ -108,49 +146,36 @@ const sketch = (p) => {
   /* eslint-disable-next-line no-param-reassign */
   p.draw = () => {
     p.background(51);
-
     p.orbitControl();
 
+    // scale the world
+    p.scale(20);
+
+    // draw the axes
     p.push();
+    p.stroke(255, 0, 0);
+    p.line(0, 0, 0, 10, 0, 0);
     p.stroke(0, 255, 0);
-    p.line(0, 0, 0, 100, 0, 0);
-    p.line(0, 0, 0, 0, 100, 0);
-    p.line(0, 0, 0, 0, 0, 100);
+    p.line(0, 0, 0, 0, 10, 0);
+    p.stroke(0, 0, 255);
+    p.line(0, 0, 0, 0, 0, 10);
     p.pop();
 
     // draw the objects in the world
     world.updatables.forEach((updatable) => {
       p.push();
 
-      if (updatable instanceof MassPhysicsObject) {
-        const { position, rotation } = updatable.transform;
-
-        const angle = Math.acos(rotation.get(0)) * 2;
-        const axis = rotation.getValues().slice(1);
-
-        p.translate(position.get(0) * 100, position.get(1) * 100, position.get(2) * 100);
-        if (!axis.every((value) => value === 0)) p.rotate(angle, axis);
-      }
-
       p.strokeWeight(0.2);
 
       if (updatable instanceof MassPoint) {
+        p.stroke(255, 0, 0);
         p.noStroke();
         p.fill(255, 0, 0);
 
-        p.sphere(5);
+        p.translate(...updatable.transform.position.getValues());
+        p.sphere(0.1);
       } else if (updatable instanceof RigidBody) {
-        p.stroke(0, 0, 0);
-        p.fill(255, 0, 0);
-
-        if (updatable === world.rigidCube) {
-          p.scale(20);
-          p.model(cubeModel);
-        } else if (updatable === world.rigidDisk) {
-          p.scale(20);
-          p.rotateX(Math.PI / 2);
-          p.model(diskModel);
-        }
+        drawRigidBody(p, updatable);
       } else if (updatable instanceof Spring) {
         p.noFill();
         p.stroke(255, 255, 255);
@@ -159,17 +184,19 @@ const sketch = (p) => {
         const position2 = updatable.point2.transform.position;
 
         p.line(
-          position1.get(0) * 100,
-          position1.get(1) * 100,
-          position1.get(2) * 100,
-          position2.get(0) * 100,
-          position2.get(1) * 100,
-          position2.get(2) * 100,
+          position1.get(0),
+          position1.get(1),
+          position1.get(2),
+          position2.get(0),
+          position2.get(1),
+          position2.get(2),
         );
       }
 
       p.pop();
     });
+
+    // update the simulation in real time
 
     const currentTime = Date.now() / 1000;
 
