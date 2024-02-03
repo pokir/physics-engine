@@ -150,13 +150,18 @@ const sketch = (p) => {
   };
 
   /* eslint-disable-next-line no-param-reassign */
+  p.windowResized = () => {
+    p.resizeCanvas(window.innerWidth - 20, window.innerHeight - 20);
+  };
+
+  /* eslint-disable-next-line no-param-reassign */
   p.preload = () => {
     font = p.loadFont('fonts/Arial.ttf');
   };
 
   /* eslint-disable-next-line no-param-reassign */
   p.setup = () => {
-    p.createCanvas(600, 600, p.WEBGL);
+    p.createCanvas(window.innerWidth - 20, window.innerHeight - 20, p.WEBGL);
   };
 
   /* eslint-disable-next-line no-param-reassign */
