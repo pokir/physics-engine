@@ -142,6 +142,13 @@ const sketch = (p) => {
 
   let font;
 
+  let debug = true;
+
+  /* eslint-disable-next-line no-param-reassign */
+  p.keyPressed = () => {
+    if (p.key === ' ') debug = !debug;
+  };
+
   /* eslint-disable-next-line no-param-reassign */
   p.preload = () => {
     font = p.loadFont('fonts/Arial.ttf');
@@ -189,31 +196,48 @@ const sketch = (p) => {
         const vectorToString = (vector) => vector.getValues().map((value) => value.toFixed(2));
         const vectorNormToString = (vector) => vector.getNorm().toFixed(3).toString();
 
-        let information = `${updatable.constructor.name}`;
-        information += `\nposition: ${vectorToString(updatable.transform.position)}`;
-        information += `\nrotation: ${vectorToString(updatable.transform.rotation)}`;
-        information += `\nscaling: ${vectorToString(updatable.transform.scaling)}`;
-        information += `\nangular velocity: ${vectorToString(updatable.angularVelocity)}`;
-        information += `\nangular speed: ${vectorNormToString(updatable.angularVelocity)}`;
-        information += `\ntotal forces: ${vectorToString(updatable.totalForces)}`;
-        information += `\ntotal forces norm: ${vectorNormToString(updatable.totalForces)}`;
-        information += `\ntotal torque: ${vectorToString(updatable.totalTorque)}`;
-        information += `\ntotal torque norm: ${vectorNormToString(updatable.totalTorque)}`;
-        information += `\nkinetic energy: ${updatable.getKineticEnergy().toFixed(3)}`;
+        if (debug) {
+          let information = `${updatable.constructor.name}`;
+          information += `\nposition: ${vectorToString(updatable.transform.position)}`;
+          information += `\nrotation: ${vectorToString(updatable.transform.rotation)}`;
+          information += `\nscaling: ${vectorToString(updatable.transform.scaling)}`;
+          information += `\nangular velocity: ${vectorToString(updatable.angularVelocity)}`;
+          information += `\nangular speed: ${vectorNormToString(updatable.angularVelocity)}`;
+          information += `\ntotal forces: ${vectorToString(updatable.totalForces)}`;
+          information += `\ntotal forces norm: ${vectorNormToString(updatable.totalForces)}`;
+          information += `\ntotal torque: ${vectorToString(updatable.totalTorque)}`;
+          information += `\ntotal torque norm: ${vectorNormToString(updatable.totalTorque)}`;
+          information += `\nkinetic energy: ${updatable.getKineticEnergy().toFixed(3)}`;
 
-        p.push();
-        p.stroke(0, 128, 255);
-        p.fill(0, 128, 255);
-        p.strokeWeight(1);
+          p.push();
 
-        p.textFont(font);
-        p.textSize(0.3);
+          p.stroke(0, 128, 255);
+          p.fill(0, 128, 255);
+          p.strokeWeight(1);
 
-        p.translate(...updatable.transform.position.getValues());
-        p.line(0, 0, 0, 2.3, -1.5, -1.5);
-        p.translate(2.5, -1.5, -1.5);
-        p.text(information, 0, 0);
-        p.pop();
+          p.textFont(font);
+          p.textSize(0.3);
+
+          p.translate(...updatable.transform.position.getValues());
+          p.line(0, 0, 0, 2.3, -1.5, -1.5);
+
+          p.push();
+          p.translate(2.5, -1.5, -1.5);
+          p.text(information, 0, 0);
+          p.pop();
+
+          // draw the angular velocity vector
+          p.stroke(255, 128, 0);
+          p.line(0, 0, 0, ...updatable.angularVelocity.divide(40).getValues());
+          p.fill(255, 128, 0);
+          p.noStroke();
+          p.push();
+          p.translate(...updatable.angularVelocity.divide(40).getValues());
+          p.sphere(0.1);
+          p.pop();
+
+          p.pop();
+        }
       } else if (updatable instanceof Spring) {
         p.noFill();
         p.stroke(255, 255, 255);
