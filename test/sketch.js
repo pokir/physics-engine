@@ -78,8 +78,10 @@ class MainWorld extends World {
 
     if (this.time < 5) {
       this.rigidDisk.applyTorque(new Vector(0, 0, 1).multiply(100));
-    } else if (this.time < 10) {
-      this.rigidDisk.applyTorque(new Vector(1, 0, 0).multiply(100));
+    } else {
+      const direction = new Vector(0, 1, 0).cross(this.rigidDisk.angularVelocity).normalize(true);
+
+      this.rigidDisk.applyTorque(direction.multiply(1000));
     }
   }
 }
@@ -138,6 +140,13 @@ const sketch = (p) => {
 
   let lastTime = Date.now() / 1000;
 
+  let font;
+
+  /* eslint-disable-next-line no-param-reassign */
+  p.preload = () => {
+    font = p.loadFont('fonts/Arial.ttf');
+  };
+
   /* eslint-disable-next-line no-param-reassign */
   p.setup = () => {
     p.createCanvas(600, 600, p.WEBGL);
@@ -176,6 +185,34 @@ const sketch = (p) => {
         p.sphere(0.1);
       } else if (updatable instanceof RigidBody) {
         drawRigidBody(p, updatable);
+
+        const vectorToString = (vector) => vector.getValues().map((value) => value.toFixed(2));
+        const vectorNormToString = (vector) => vector.getNorm().toFixed(3).toString();
+
+        let information = `${updatable.constructor.name}`;
+        information += `\nposition: ${vectorToString(updatable.transform.position)}`;
+        information += `\nrotation: ${vectorToString(updatable.transform.rotation)}`;
+        information += `\nscaling: ${vectorToString(updatable.transform.scaling)}`;
+        information += `\nangular velocity: ${vectorToString(updatable.angularVelocity)}`;
+        information += `\nangular speed: ${vectorNormToString(updatable.angularVelocity)}`;
+        information += `\ntotal forces: ${vectorToString(updatable.totalForces)}`;
+        information += `\ntotal forces norm: ${vectorNormToString(updatable.totalForces)}`;
+        information += `\ntotal torque: ${vectorToString(updatable.totalTorque)}`;
+        information += `\ntotal torque norm: ${vectorNormToString(updatable.totalTorque)}`;
+
+        p.push();
+        p.stroke(0, 128, 255);
+        p.fill(0, 128, 255);
+        p.strokeWeight(1);
+
+        p.textFont(font);
+        p.textSize(0.3);
+
+        p.translate(...updatable.transform.position.getValues());
+        p.line(0, 0, 0, 2.3, -1.5, -1.5);
+        p.translate(2.5, -1.5, -1.5);
+        p.text(information, 0, 0);
+        p.pop();
       } else if (updatable instanceof Spring) {
         p.noFill();
         p.stroke(255, 255, 255);
