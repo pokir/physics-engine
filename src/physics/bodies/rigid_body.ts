@@ -77,16 +77,11 @@ export class RigidBody extends MassPhysicsObject {
   }
 
   static getCubeInertiaTensor(sideLength: number, mass: number) {
-    return new Matrix([3, 3], [
-      [(2 * (sideLength ** 2)) * (mass / 12), 0, 0],
-      [0, (2 * (sideLength ** 2)) * (mass / 12), 0],
-      [0, 0, (2 * (sideLength ** 2)) * (mass / 12)],
-    ]);
+    return Matrix.identity(3).multiply((2 * (sideLength ** 2)) * (mass / 12));
   }
 
   static getDiskInertiaTensor(radius: number, mass: number, normalAxis: number) {
     // axis: 0 for x, 1 for y, 2 for z
-    // TODO: improve axis selection
     const planeInertia = (radius ** 2) * (mass / 4);
     const normalInertia = (radius ** 2) * (mass / 2);
 
@@ -94,5 +89,9 @@ export class RigidBody extends MassPhysicsObject {
     inertiaMatrix.values[normalAxis][normalAxis] = normalInertia;
 
     return inertiaMatrix;
+  }
+
+  static getSphereInertiaTensor(radius: number, mass: number) {
+    return Matrix.identity(3).multiply((2 / 5) * mass * (radius ** 2));
   }
 }
