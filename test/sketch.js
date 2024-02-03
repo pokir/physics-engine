@@ -199,6 +199,7 @@ const sketch = (p) => {
         information += `\ntotal forces norm: ${vectorNormToString(updatable.totalForces)}`;
         information += `\ntotal torque: ${vectorToString(updatable.totalTorque)}`;
         information += `\ntotal torque norm: ${vectorNormToString(updatable.totalTorque)}`;
+        information += `\nkinetic energy: ${updatable.getKineticEnergy().toFixed(3)}`;
 
         p.push();
         p.stroke(0, 128, 255);

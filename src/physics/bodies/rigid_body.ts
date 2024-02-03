@@ -76,6 +76,13 @@ export class RigidBody extends MassPhysicsObject {
     return this.mesh.vertices.map((vertex) => this.transform.applyTransform(vertex));
   }
 
+  getKineticEnergy() {
+    return (this.mass * (this.velocity.getNorm() ** 2)) / 2
+      + (this.angularVelocity.dot(
+        Vector.fromMatrix(this.inertiaTensor.product(this.angularVelocity)),
+      )) / 2;
+  }
+
   static getCubeInertiaTensor(sideLength: number, mass: number) {
     return Matrix.identity(3).multiply((2 * (sideLength ** 2)) * (mass / 12));
   }
