@@ -70,9 +70,6 @@ export class Collisions {
           direction = previousDirection
             .cross(previousPoint.multiply(-1))
             .cross(previousDirection);
-
-          // const lineDirection = simplex[1].subtract(simplex[0]);
-          // direction = simplex[0].multiply(-1).subtract(lineDirection);
         } else if (simplex.length === 3) {
           // next direction is the vector normal to the triangle connecting the three points
           // and pointing to the origin
