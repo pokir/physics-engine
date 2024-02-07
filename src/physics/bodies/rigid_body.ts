@@ -2,6 +2,7 @@ import { rungeKutta4Method } from '../../math/differential_equation_solvers/rung
 import { Matrix } from '../../math/matrix.js';
 import { Vector } from '../../math/vector.js';
 import { Mesh } from '../../meshes/mesh.js';
+import { Cached } from '../../utils/cache.js';
 import { MassPhysicsObject } from '../mass_physics_object.js';
 import { Transform } from '../transform.js';
 
@@ -17,6 +18,11 @@ export class RigidBody extends MassPhysicsObject {
 
   totalTorque: Vector = new Vector(0, 0, 0);
 
+  private cachedVertices: Cached<Vector[]>;
+
+  // whether the vertices cache should be updated
+  private shouldUpdateVertices: boolean = false;
+
   constructor(transform: Transform, mass: number, mesh: Mesh, inertiaTensor: Matrix) {
     // inertiaTensor must be in the (x, y, z) basis relative to the object
     super(transform, mass);
@@ -25,6 +31,20 @@ export class RigidBody extends MassPhysicsObject {
 
     this.inertiaTensor = inertiaTensor;
     this.inverseInertiaTensor = this.inertiaTensor.inverse();
+
+    this.cachedVertices = new Cached(
+      () => {
+        this.shouldUpdateVertices = false;
+        return this.mesh.vertices.map(
+          (vertex) => this.transform.applyTransform(vertex),
+        );
+      },
+      () => this.shouldUpdateVertices,
+    );
+  }
+
+  getVertices() {
+    return this.cachedVertices.getData();
   }
 
   update(dt: number) {
@@ -60,6 +80,9 @@ export class RigidBody extends MassPhysicsObject {
     this.totalTorque = this.totalTorque.multiply(0);
 
     super.update(dt);
+
+    // since the transform changed, the cached vertices are not correct anymore
+    this.shouldUpdateVertices = true;
   }
 
   applyTorque(torque: Vector) {
@@ -70,10 +93,6 @@ export class RigidBody extends MassPhysicsObject {
     // applies force and torque at the same time
     this.applyForce(force);
     this.applyTorque(point.subtract(this.transform.position).cross(force));
-  }
-
-  getVertices() {
-    return this.mesh.vertices.map((vertex) => this.transform.applyTransform(vertex));
   }
 
   getKineticEnergy() {
