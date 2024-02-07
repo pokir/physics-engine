@@ -6,14 +6,39 @@ export class Collisions {
 
   body2: RigidBody;
 
+  vertices1: Vector[];
+
+  vertices2: Vector[];
+
   constructor(body1: RigidBody, body2: RigidBody) {
+    // create an instance of this class every frame!
     this.body1 = body1;
     this.body2 = body2;
+
+    this.vertices1 = this.body1.getVertices();
+    this.vertices2 = this.body2.getVertices();
+  }
+
+  private static singleSupport(direction: Vector, vertices: Vector[]) {
+    let farthest = vertices[0];
+    let farthestDotProduct = direction.dot(farthest);
+
+    vertices.forEach((vertex) => {
+      const dotProduct = direction.dot(vertex);
+
+      if (dotProduct > farthestDotProduct) {
+        farthest = vertex;
+        farthestDotProduct = dotProduct;
+      }
+    });
+
+    return farthest;
   }
 
   private support(direction: Vector) {
     // returns the farthest point of the difference of the two objects in the direction
-    return this.body1.support(direction).subtract(this.body2.support(direction.multiply(-1)));
+    return Collisions.singleSupport(direction, this.vertices1)
+      .subtract(Collisions.singleSupport(direction.multiply(-1), this.vertices2));
   }
 
   private static vectorEquals(vector1: Vector, vector2: Vector) {

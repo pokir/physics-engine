@@ -83,24 +83,6 @@ export class RigidBody extends MassPhysicsObject {
       )) / 2;
   }
 
-  support(direction: Vector) {
-    const vertices = this.getVertices();
-
-    let farthest = vertices[0];
-    let farthestDotProduct = direction.dot(farthest);
-
-    vertices.forEach((vertex) => {
-      const dotProduct = direction.dot(vertex);
-
-      if (dotProduct > farthestDotProduct) {
-        farthest = vertex;
-        farthestDotProduct = dotProduct;
-      }
-    });
-
-    return farthest;
-  }
-
   static getCubeInertiaTensor(sideLength: number, mass: number) {
     return Matrix.identity(3).multiply((2 * (sideLength ** 2)) * (mass / 12));
   }
