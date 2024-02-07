@@ -7,7 +7,7 @@ import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
 import { Mesh } from '../dist/meshes/mesh.js';
 import { Transform } from '../dist/physics/transform.js';
-import { Collisions } from '../dist/physics/collisions/collisions.js';
+import { GJK } from '../dist/physics/collisions/gjk.js';
 
 const cubeModelPath = 'models/cube.obj';
 const diskModelPath = 'models/disk.obj';
@@ -86,7 +86,7 @@ class MainWorld extends World {
     }
 
     // do collisions
-    if (new Collisions(this.rigidDisk, this.rigidCube).colliding()) {
+    if (new GJK(this.rigidDisk, this.rigidCube).colliding()) {
       console.log('colliding!');
     }
   }

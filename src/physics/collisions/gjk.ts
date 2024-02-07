@@ -1,7 +1,7 @@
 import { Vector } from '../../math/vector.js';
 import { RigidBody } from '../bodies/rigid_body.js';
 
-export class Collisions {
+export class GJK {
   body1: RigidBody;
 
   body2: RigidBody;
@@ -37,8 +37,8 @@ export class Collisions {
 
   private support(direction: Vector) {
     // returns the farthest point of the difference of the two objects in the direction
-    return Collisions.singleSupport(direction, this.vertices1)
-      .subtract(Collisions.singleSupport(direction.multiply(-1), this.vertices2));
+    return GJK.singleSupport(direction, this.vertices1)
+      .subtract(GJK.singleSupport(direction.multiply(-1), this.vertices2));
   }
 
   private static vectorEquals(vector1: Vector, vector2: Vector) {
@@ -143,7 +143,7 @@ export class Collisions {
         const nextPoint = this.support(direction);
 
         // if the next point is already in the simplex, collision is impossible
-        if (simplex.some((point) => Collisions.vectorEquals(point, nextPoint))) return false;
+        if (simplex.some((point) => GJK.vectorEquals(point, nextPoint))) return false;
 
         // replace the correct point
         if (direction === triangleNormal1) simplex[2] = nextPoint;
