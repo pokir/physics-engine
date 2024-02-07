@@ -7,6 +7,7 @@ import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
 import { Mesh } from '../dist/meshes/mesh.js';
 import { Transform } from '../dist/physics/transform.js';
+import { Collisions } from '../dist/physics/collisions/collisions.js';
 
 const cubeModelPath = 'models/cube.obj';
 const diskModelPath = 'models/disk.obj';
@@ -83,6 +84,11 @@ class MainWorld extends World {
 
       this.rigidDisk.applyTorque(direction.multiply(1000));
     }
+
+    // do collisions
+    if (new Collisions(this.rigidDisk, this.rigidCube).colliding()) {
+      console.log('colliding!');
+    }
   }
 }
 
@@ -120,9 +126,13 @@ function drawRigidBody(p, rigidBody) {
       }
 
       // add the vertices in the right order
-      if (edge[0] === faceVerticesIndices[faceVerticesIndices.length - 1]) faceVerticesIndices.push(edge[1]);
-      else if (edge[1] === faceVerticesIndices[faceVerticesIndices.length - 1]) faceVerticesIndices.push(edge[0]);
-      else faceVerticesIndices.push(...edge);
+      if (edge[0] === faceVerticesIndices[faceVerticesIndices.length - 1]) {
+        faceVerticesIndices.push(edge[1]);
+      } else if (edge[1] === faceVerticesIndices[faceVerticesIndices.length - 1]) {
+        faceVerticesIndices.push(edge[0]);
+      } else {
+        faceVerticesIndices.push(...edge);
+      }
     });
 
     p.beginShape();
@@ -147,6 +157,11 @@ const sketch = (p) => {
   /* eslint-disable-next-line no-param-reassign */
   p.keyPressed = () => {
     if (p.key === ' ') debug = !debug;
+
+    if (p.key === 'w') world.rigidDisk.applyForce(new Vector(0, -1000, 0));
+    if (p.key === 'a') world.rigidDisk.applyForce(new Vector(-1000, 0, 0));
+    if (p.key === 's') world.rigidDisk.applyForce(new Vector(0, 1000, 0));
+    if (p.key === 'd') world.rigidDisk.applyForce(new Vector(1000, 0, 0));
   };
 
   /* eslint-disable-next-line no-param-reassign */
