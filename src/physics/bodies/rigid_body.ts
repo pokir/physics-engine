@@ -20,9 +20,6 @@ export class RigidBody extends MassPhysicsObject {
 
   private cachedVertices: Cached<Vector[]>;
 
-  // whether the vertices cache should be updated
-  private shouldUpdateVertices: boolean = false;
-
   constructor(transform: Transform, mass: number, mesh: Mesh, inertiaTensor: Matrix) {
     // inertiaTensor must be in the (x, y, z) basis relative to the object
     super(transform, mass);
@@ -32,15 +29,15 @@ export class RigidBody extends MassPhysicsObject {
     this.inertiaTensor = inertiaTensor;
     this.inverseInertiaTensor = this.inertiaTensor.inverse();
 
-    this.cachedVertices = new Cached(
-      () => {
-        this.shouldUpdateVertices = false;
-        return this.mesh.vertices.map(
-          (vertex) => this.transform.applyTransform(vertex),
-        );
-      },
-      () => this.shouldUpdateVertices,
+    const { cached: cachedVertices, proxy: transformProxy } = Cached.tiedToObject(
+      () => this.mesh.vertices.map(
+        (vertex) => this.transform.applyTransform(vertex),
+      ),
+      this.transform,
     );
+
+    this.cachedVertices = cachedVertices;
+    this.transform = transformProxy;
   }
 
   getVertices() {
@@ -80,9 +77,6 @@ export class RigidBody extends MassPhysicsObject {
     this.totalTorque = this.totalTorque.multiply(0);
 
     super.update(dt);
-
-    // since the transform changed, the cached vertices are not correct anymore
-    this.shouldUpdateVertices = true;
   }
 
   applyTorque(torque: Vector) {
