@@ -6,6 +6,8 @@ export class GJK {
 
   body2: RigidBody;
 
+  simplex: Vector[] = [];
+
   constructor(body1: RigidBody, body2: RigidBody) {
     // create an instance of this class every frame!
     this.body1 = body1;
@@ -39,51 +41,49 @@ export class GJK {
     return vector1.getValues().every((value, i) => value === vector2Values[i]);
   }
 
-  colliding() {
-    const simplex: Vector[] = [];
-
+  perform() {
     // choose an arbitrary initial direction
     const initialDirection = this.body2.transform.position.subtract(this.body1.transform.position);
 
-    // use the initial direction when simplex.length === 0
+    // use the initial direction when this.simplex.length === 0
     let direction = initialDirection;
 
     while (true) {
       const previousDirection = direction;
-      const previousPoint = simplex[simplex.length - 1];
+      const previousPoint = this.simplex[this.simplex.length - 1];
 
-      if (simplex.length < 4) {
-        if (simplex.length === 1) {
+      if (this.simplex.length < 4) {
+        if (this.simplex.length === 1) {
           // next direction points from the previous point to the origin
           direction = previousPoint.multiply(-1);
-        } else if (simplex.length === 2) {
+        } else if (this.simplex.length === 2) {
           // next direction is the vector normal to the line connecting the two points
           // and pointing to the origin
 
           direction = previousDirection
             .cross(previousPoint.multiply(-1))
             .cross(previousDirection);
-        } else if (simplex.length === 3) {
+        } else if (this.simplex.length === 3) {
           // next direction is the vector normal to the triangle connecting the three points
           // and pointing to the origin
-          const planeDirection1 = simplex[1].subtract(simplex[0]);
-          const planeDirection2 = simplex[2].subtract(simplex[0]);
+          const planeDirection1 = this.simplex[1].subtract(this.simplex[0]);
+          const planeDirection2 = this.simplex[2].subtract(this.simplex[0]);
 
           direction = planeDirection1.cross(planeDirection2);
 
           // make sure the direction points to the origin
-          if (direction.dot(simplex[0]) < 0) direction = direction.multiply(-1);
+          if (direction.dot(this.simplex[0]) < 0) direction = direction.multiply(-1);
         }
 
-        // add the farthest point in the direction to the simplex
+        // add the farthest point in the direction to the this.simplex
         const nextPoint = this.support(direction);
-        simplex.push(nextPoint);
+        this.simplex.push(nextPoint);
         if (nextPoint.dot(direction) < 0) return false;
-      } else if (simplex.length === 4) {
+      } else if (this.simplex.length === 4) {
         // the three edges of the tetrahedron connected to the last point
-        const edge1 = simplex[3].subtract(simplex[0]);
-        const edge2 = simplex[3].subtract(simplex[1]);
-        const edge3 = simplex[3].subtract(simplex[2]);
+        const edge1 = this.simplex[3].subtract(this.simplex[0]);
+        const edge2 = this.simplex[3].subtract(this.simplex[1]);
+        const edge3 = this.simplex[3].subtract(this.simplex[2]);
 
         // normals to each of the three triangles of the tetrahedron connected to the last point
         let triangleNormal1 = edge1.cross(edge2);
@@ -102,9 +102,9 @@ export class GJK {
         }
 
         // centers of each triangle above the base of the tetrahedron
-        const triangleCenter1 = simplex[0].add(simplex[1]).add(simplex[3]).divide(3);
-        const triangleCenter2 = simplex[1].add(simplex[2]).add(simplex[3]).divide(3);
-        const triangleCenter3 = simplex[0].add(simplex[2]).add(simplex[3]).divide(3);
+        const triangleCenter1 = this.simplex[0].add(this.simplex[1]).add(this.simplex[3]).divide(3);
+        const triangleCenter2 = this.simplex[1].add(this.simplex[2]).add(this.simplex[3]).divide(3);
+        const triangleCenter3 = this.simplex[0].add(this.simplex[2]).add(this.simplex[3]).divide(3);
 
         // check if the origin is inside the tetrahedron
         if (
@@ -135,14 +135,19 @@ export class GJK {
 
         const nextPoint = this.support(direction);
 
-        // if the next point is already in the simplex, collision is impossible
-        if (simplex.some((point) => GJK.vectorEquals(point, nextPoint))) return false;
+        // if the next point is already in the this.simplex, collision is impossible
+        if (this.simplex.some((point) => GJK.vectorEquals(point, nextPoint))) return false;
 
         // replace the correct point
-        if (direction === triangleNormal1) simplex[2] = nextPoint;
-        else if (direction === triangleNormal2) simplex[0] = nextPoint;
-        else if (direction === triangleNormal3) simplex[1] = nextPoint;
+        if (direction === triangleNormal1) this.simplex[2] = nextPoint;
+        else if (direction === triangleNormal2) this.simplex[0] = nextPoint;
+        else if (direction === triangleNormal3) this.simplex[1] = nextPoint;
       }
     }
+  }
+
+  getLastSimplex() {
+    // returns the last simplex of the gjk algorithm
+    return this.simplex;
   }
 }
