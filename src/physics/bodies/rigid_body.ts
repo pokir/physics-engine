@@ -40,6 +40,18 @@ export class RigidBody extends MassPhysicsObject {
     this.transform = transformProxy;
   }
 
+  static withInfiniteMass(transform: Transform, mesh: Mesh) {
+    const rigidBody = new RigidBody(
+      transform,
+      Infinity,
+      mesh,
+      Matrix.identity(3).multiply(Infinity),
+    );
+    rigidBody.inverseInertiaTensor = new Matrix([3, 3]);
+
+    return rigidBody;
+  }
+
   getVertices() {
     return this.cachedVertices.getData();
   }
@@ -47,25 +59,27 @@ export class RigidBody extends MassPhysicsObject {
   update(dt: number) {
     const { rotation } = this.transform;
 
-    [this.angularVelocity] = rungeKutta4Method([this.angularVelocity], 0, dt, [
-      (time: number, [angularVelocity]: Vector[]) => {
-        // rotate the vectors to represent them in the same basis as the inertia tensor
-        const rotatedAngularVelocity = angularVelocity
-          .applyQuaternionRotation(rotation.conjugate());
-        const rotatedTotalTorque = this.totalTorque
-          .applyQuaternionRotation(rotation.conjugate());
+    if (this.mass !== Infinity) {
+      [this.angularVelocity] = rungeKutta4Method([this.angularVelocity], 0, dt, [
+        (time: number, [angularVelocity]: Vector[]) => {
+          // rotate the vectors to represent them in the same basis as the inertia tensor
+          const rotatedAngularVelocity = angularVelocity
+            .applyQuaternionRotation(rotation.conjugate());
+          const rotatedTotalTorque = this.totalTorque
+            .applyQuaternionRotation(rotation.conjugate());
 
-        const angularAcceleration = Vector.fromMatrix(this.inverseInertiaTensor.product(
-          rotatedTotalTorque.subtract(
-            rotatedAngularVelocity.cross(
-              Vector.fromMatrix(this.inertiaTensor.product(rotatedAngularVelocity)),
+          const angularAcceleration = Vector.fromMatrix(this.inverseInertiaTensor.product(
+            rotatedTotalTorque.subtract(
+              rotatedAngularVelocity.cross(
+                Vector.fromMatrix(this.inertiaTensor.product(rotatedAngularVelocity)),
+              ),
             ),
-          ),
-        )).applyQuaternionRotation(rotation);
+          )).applyQuaternionRotation(rotation);
 
-        return angularAcceleration;
-      },
-    ]);
+          return angularAcceleration;
+        },
+      ]);
+    }
 
     // apply the rotation directly (no ODE solver)
     const angularSpeed = this.angularVelocity.getNorm();

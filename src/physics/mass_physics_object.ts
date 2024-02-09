@@ -18,14 +18,16 @@ export class MassPhysicsObject implements Updatable {
   }
 
   update(dt: number) {
-    // solve second order ODE: F = ma
-    const lastState = [this.transform.position, this.velocity];
-    const nextState = rungeKutta4Method(lastState, 0, dt, [
-      (time: number, [position, velocity]: Vector[]) => velocity,
-      (time: number, [position, velocity]: Vector[]) => this.totalForces.divide(this.mass),
-    ]);
+    if (this.mass !== Infinity) {
+      // solve second order ODE: F = ma
+      const lastState = [this.transform.position, this.velocity];
+      const nextState = rungeKutta4Method(lastState, 0, dt, [
+        (time: number, [position, velocity]: Vector[]) => velocity,
+        (time: number, [position, velocity]: Vector[]) => this.totalForces.divide(this.mass),
+      ]);
 
-    [this.transform.position, this.velocity] = nextState;
+      [this.transform.position, this.velocity] = nextState;
+    }
 
     // clear the forces
     this.totalForces = this.totalForces.multiply(0);
