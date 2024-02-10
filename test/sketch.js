@@ -7,35 +7,35 @@ import { MassPoint } from '../dist/physics/points/mass_point.js';
 import { Gravity } from '../dist/physics/force_generators/gravity.js';
 import { Mesh } from '../dist/meshes/mesh.js';
 import { Transform } from '../dist/physics/transform.js';
+import { Matrix } from '../dist/math/matrix.js';
 
 const cubeModelPath = 'models/cube.obj';
 const diskModelPath = 'models/disk.obj';
+const floorModelPath = 'models/floor.obj';
+
+function getMesh(path) {
+  const request = new XMLHttpRequest();
+
+  let mesh;
+  request.onreadystatechange = function () {
+    if (this.readyState === 4 && this.status === 200) {
+      mesh = Mesh.fromWavefront(this.responseText);
+    }
+  };
+  request.open('GET', path, false);
+  request.send();
+
+  return mesh;
+}
 
 class MainWorld extends World {
   constructor(timeStep) {
     super(timeStep);
 
     // get the meshes
-    let cubeMesh;
-    let diskMesh;
-
-    let request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        cubeMesh = Mesh.fromWavefront(this.responseText);
-      }
-    };
-    request.open('GET', cubeModelPath, false);
-    request.send();
-
-    request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        diskMesh = Mesh.fromWavefront(this.responseText);
-      }
-    };
-    request.open('GET', diskModelPath, false);
-    request.send();
+    const cubeMesh = getMesh(cubeModelPath);
+    const diskMesh = getMesh(diskModelPath);
+    const floorMesh = getMesh(floorModelPath);
 
     this.softCube = SoftBody.createCube(3, 1, 300, 15);
     this.softCube.points[0].transform.translate(new Vector(50, 0, 0));
@@ -50,17 +50,22 @@ class MainWorld extends World {
 
     const diskMass = 10;
     this.rigidDisk = new RigidBody(
-      new Transform(),
+      new Transform(new Vector(0, -5, 0)),
       diskMass,
       diskMesh,
       RigidBody.getDiskInertiaTensor(1, diskMass, 1),
     );
     this.rigidDisk.transform.rotate(Math.PI / 2, new Vector(1, 0, 0));
-    this.rigidDisk.transform.translate(new Vector(0, -5, 0));
+
+    this.floor = RigidBody.withInfiniteMass(
+      new Transform(new Vector(0, 5, 0)),
+      floorMesh,
+    );
 
     this.register(...this.softCube.points, ...this.softCube.connections);
     this.register(this.rigidCube);
     this.register(this.rigidDisk);
+    this.register(this.floor);
 
     this.addForceGenerator(new Gravity(0));
   }
