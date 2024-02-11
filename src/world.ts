@@ -1,5 +1,6 @@
+import { Vector } from './math/vector.js';
 import { RigidBody } from './physics/bodies/rigid_body.js';
-import { GJK } from './physics/collisions/gjk.js';
+import { Collision } from './physics/collisions/collision.js';
 import { ForceGenerator } from './physics/force_generators/force_generator.js';
 import { MassPhysicsObject } from './physics/mass_physics_object.js';
 import { Updatable } from './updatable.js';
@@ -46,7 +47,7 @@ export class World {
         this.updatables.slice(i + 1).forEach((otherUpdatable) => {
           if (!(otherUpdatable instanceof RigidBody)) return;
 
-          World.handleCollision(updatable, otherUpdatable);
+          this.handleCollision(updatable, otherUpdatable);
         });
       }
     });
@@ -82,7 +83,7 @@ export class World {
     return separatingWidth < 0 && separatingHeight < 0 && separatingDepth < 0;
   }
 
-  private static handleCollision(body1: RigidBody, body2: RigidBody) {
+  private handleCollision(body1: RigidBody, body2: RigidBody) {
     // only do collisions between rigid bodies for now
 
     const box1 = World.getBoundingBox(body1);
@@ -90,10 +91,18 @@ export class World {
 
     // if bounding boxes are colliding, do gjk
     if (World.boundingBoxesColliding(box1, box2)) {
-      const collision = new GJK(body1, body2);
+      const collision = new Collision(body1, body2);
 
       if (collision.perform()) {
-        console.debug('colliding!');
+        const contactNormal = collision.getContactNormal() as Vector;
+        const contactPoint = collision.getContactPoint() as Vector;
+        const penetrationDepth = collision.getPenetrationDepth() as number;
+
+        // TODO: how to calculate force to apply?
+        const force = contactNormal.multiply(penetrationDepth).multiply(100).divide(this.timeStep);
+
+        body2.applyForceAtPoint(force, contactPoint);
+        body1.applyForceAtPoint(force.multiply(-1), contactPoint);
       }
     }
   }

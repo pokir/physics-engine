@@ -1,12 +1,18 @@
 import { Vector } from '../../math/vector.js';
 import { RigidBody } from '../bodies/rigid_body.js';
 
-export class GJK {
-  body1: RigidBody;
+export class Collision {
+  private body1: RigidBody;
 
-  body2: RigidBody;
+  private body2: RigidBody;
 
-  simplex: Vector[] = [];
+  private simplex: Vector[] = [];
+
+  private penetrationDepth: number | null = null;
+
+  private contactPoint: Vector | null = null;
+
+  private contactNormal: Vector | null = null;
 
   constructor(body1: RigidBody, body2: RigidBody) {
     // create an instance of this class every frame!
@@ -32,8 +38,8 @@ export class GJK {
 
   private support(direction: Vector) {
     // returns the farthest point of the difference of the two objects in the direction
-    return GJK.singleSupport(direction, this.body1.getVertices())
-      .subtract(GJK.singleSupport(direction.multiply(-1), this.body2.getVertices()));
+    return Collision.singleSupport(direction, this.body1.getVertices())
+      .subtract(Collision.singleSupport(direction.multiply(-1), this.body2.getVertices()));
   }
 
   private static vectorEquals(vector1: Vector, vector2: Vector) {
@@ -42,6 +48,14 @@ export class GJK {
   }
 
   perform() {
+    const colliding = this.performGJK();
+
+    if (colliding) this.computeCollisionInformation();
+
+    return colliding;
+  }
+
+  private performGJK() {
     // choose an arbitrary initial direction
     const initialDirection = this.body2.transform.position.subtract(this.body1.transform.position);
 
@@ -136,7 +150,7 @@ export class GJK {
         const nextPoint = this.support(direction);
 
         // if the next point is already in the this.simplex, collision is impossible
-        if (this.simplex.some((point) => GJK.vectorEquals(point, nextPoint))) return false;
+        if (this.simplex.some((point) => Collision.vectorEquals(point, nextPoint))) return false;
 
         // replace the correct point
         if (direction === triangleNormal1) this.simplex[2] = nextPoint;
@@ -146,8 +160,69 @@ export class GJK {
     }
   }
 
-  getLastSimplex() {
-    // returns the last simplex of the gjk algorithm
-    return this.simplex;
+  private computeCollisionInformation() {
+    const directions: Vector[] = [];
+
+    // use the face normals of both bodies as the directions
+    [this.body1, this.body2].forEach((body) => {
+      const vertices = body.getVertices();
+
+      body.mesh.faces.forEach((face) => {
+        // take the first two edges only
+        const edgeIndex1 = face[0];
+        const edgeIndex2 = face[1];
+
+        const [vertexIndex1, vertexIndex2] = body.mesh.edges[edgeIndex1];
+        const [vertexIndex3, vertexIndex4] = body.mesh.edges[edgeIndex2];
+
+        const vertex1 = vertices[vertexIndex1];
+        const vertex2 = vertices[vertexIndex2];
+        const vertex3 = vertices[vertexIndex3];
+        const vertex4 = vertices[vertexIndex4];
+
+        const edgeVector1 = vertex2.subtract(vertex1);
+        const edgeVector2 = vertex4.subtract(vertex3);
+
+        const normal = edgeVector1.cross(edgeVector2);
+
+        directions.push(normal);
+      });
+    });
+
+    let closestDirection = directions[0];
+    let closestPoint = this.support(closestDirection);
+    let closestDistance = closestPoint.getNorm();
+
+    directions.forEach((direction) => {
+      const point = this.support(direction);
+
+      const distance = point.getNorm();
+
+      if (distance < closestDistance) {
+        closestDirection = direction;
+        closestPoint = point;
+        closestDistance = distance;
+      }
+    });
+
+    this.penetrationDepth = closestDistance;
+    this.contactNormal = closestDirection.normalize(true);
+
+    const point1 = Collision.singleSupport(closestDirection, this.body1.getVertices());
+    const point2 = Collision.singleSupport(closestDirection.multiply(-1), this.body2.getVertices());
+
+    this.contactPoint = point1.add(point2).divide(2);
+  }
+
+  getPenetrationDepth() {
+    return this.penetrationDepth;
+  }
+
+  getContactPoint() {
+    return this.contactPoint;
+  }
+
+  getContactNormal() {
+    return this.contactNormal;
   }
 }
