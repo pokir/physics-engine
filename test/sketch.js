@@ -4,10 +4,8 @@ import { SoftBody } from '../dist/physics/bodies/soft_body.js';
 import { RigidBody } from '../dist/physics/bodies/rigid_body.js';
 import { Spring } from '../dist/physics/springs/spring.js';
 import { MassPoint } from '../dist/physics/points/mass_point.js';
-import { Gravity } from '../dist/physics/force_generators/gravity.js';
 import { Mesh } from '../dist/meshes/mesh.js';
 import { Transform } from '../dist/physics/transform.js';
-import { Matrix } from '../dist/math/matrix.js';
 
 const cubeModelPath = 'models/cube.obj';
 const diskModelPath = 'models/disk.obj';
@@ -29,6 +27,8 @@ function getMesh(path) {
 }
 
 class MainWorld extends World {
+  GRAVITATIONAL_ACCELERATION = new Vector(0, 9.81, 0);
+
   constructor(timeStep) {
     super(timeStep);
 
@@ -66,13 +66,17 @@ class MainWorld extends World {
     this.register(this.rigidCube);
     this.register(this.rigidDisk);
     this.register(this.floor);
-
-    this.addForceGenerator(new Gravity(0));
   }
 
   simulate() {
     super.simulate();
 
+    // apply gravitational force
+    this.rigidCube.applyForce(this.GRAVITATIONAL_ACCELERATION.multiply(this.rigidCube.mass));
+    this.rigidDisk.applyForce(this.GRAVITATIONAL_ACCELERATION.multiply(this.rigidDisk.mass));
+    // this.softCube.applyForce(this.GRAVITATIONAL_FORCE);
+
+    /*
     if (this.time < 0.2) {
       this.softCube.points[0].applyForce(new Vector(1, 0, 0).multiply(30));
       this.softCube.points[7].applyForce(new Vector(-1, 0, 0).multiply(30));
@@ -88,6 +92,7 @@ class MainWorld extends World {
 
       this.rigidDisk.applyTorque(direction.multiply(1000));
     }
+    */
   }
 }
 

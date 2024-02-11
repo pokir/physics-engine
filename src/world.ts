@@ -1,8 +1,6 @@
 import { Vector } from './math/vector.js';
 import { RigidBody } from './physics/bodies/rigid_body.js';
 import { Collision } from './physics/collisions/collision.js';
-import { ForceGenerator } from './physics/force_generators/force_generator.js';
-import { MassPhysicsObject } from './physics/mass_physics_object.js';
 import { Updatable } from './updatable.js';
 
 type BoundingBox = {
@@ -17,8 +15,6 @@ export class World {
 
   updatables: Updatable[] = [];
 
-  forceGenerators: ForceGenerator[] = [];
-
   constructor(timeStep: number) {
     this.timeStep = timeStep;
   }
@@ -27,20 +23,9 @@ export class World {
     this.updatables.push(...updatables);
   }
 
-  addForceGenerator(forceGenerator: ForceGenerator) {
-    this.forceGenerators.push(forceGenerator);
-  }
-
   simulate() {
     this.updatables.forEach((updatable, i) => {
       updatable.update(this.timeStep);
-
-      // apply the forces of force generators on objects with mass
-      if (updatable instanceof MassPhysicsObject) {
-        this.forceGenerators.forEach((forceGenerator) => {
-          forceGenerator.apply(updatable);
-        });
-      }
 
       // do collisions
       if (updatable instanceof RigidBody) {
