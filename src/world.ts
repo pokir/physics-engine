@@ -86,6 +86,9 @@ export class World {
   private handleCollision(body1: RigidBody, body2: RigidBody) {
     // only do collisions between rigid bodies for now
 
+    // don't deal with infinite masses colliding together
+    if (body1.mass === Infinity && body2.mass === Infinity) return;
+
     const box1 = World.getBoundingBox(body1);
     const box2 = World.getBoundingBox(body2);
 
@@ -94,15 +97,38 @@ export class World {
       const collision = new Collision(body1, body2);
 
       if (collision.perform()) {
-        const contactNormal = collision.getContactNormal() as Vector;
+        // const contactNormal = collision.getContactNormal() as Vector;
         const contactPoint = collision.getContactPoint() as Vector;
-        const penetrationDepth = collision.getPenetrationDepth() as number;
+        // const penetrationDepth = collision.getPenetrationDepth() as number;
 
-        // TODO: how to calculate force to apply?
-        const force = contactNormal.multiply(penetrationDepth).multiply(100).divide(this.timeStep);
+        if (body1.mass !== Infinity && body2.mass !== Infinity) {
+          const finalVelocity1 = body1.velocity.multiply(body1.mass - body2.mass)
+            .add(body2.velocity.multiply(2 * body2.mass))
+            .divide(body1.mass + body2.mass);
 
-        body2.applyForceAtPoint(force, contactPoint);
-        body1.applyForceAtPoint(force.multiply(-1), contactPoint);
+          const force = finalVelocity1
+            .subtract(body1.velocity)
+            .multiply(body1.mass / this.timeStep);
+
+          body1.applyForceAtPoint(force, contactPoint);
+          body2.applyForceAtPoint(force.multiply(-1), contactPoint);
+        } else if (body1.mass === Infinity) {
+          const finalVelocity2 = body1.velocity.multiply(2).subtract(body2.velocity);
+
+          const force = finalVelocity2
+            .subtract(body2.velocity)
+            .multiply(body2.mass / this.timeStep);
+
+          body2.applyForceAtPoint(force.multiply(-1), contactPoint);
+        } else if (body2.mass === Infinity) {
+          const finalVelocity1 = body2.velocity.multiply(2).subtract(body1.velocity);
+
+          const force = finalVelocity1
+            .subtract(body1.velocity)
+            .multiply(body1.mass / this.timeStep);
+
+          body1.applyForceAtPoint(force, contactPoint);
+        }
       }
     }
   }
